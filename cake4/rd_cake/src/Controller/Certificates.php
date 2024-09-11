@@ -31,17 +31,9 @@
 			$servers = sort_servers($servers, 2);
 			break;
 		default:
-			$domains = array();
-			foreach ($servers as $domain) {
-				if (strpos($realm, '('. $domain .')') === 0) {
-					array_push($domains, $domain);
-				}
-			}
-			if (count($array) > 0) {
-				$servers = $domains;
-			} else {
-				$servers = sort_servers($servers, count($servers) - 1);
-			}
+			$domain = find_domain($realm);
+			if (!is_null($domain)) $servers = $domain;
+			else $servers = default_servers($realm, $servers);
 			break;
 	}
 
@@ -70,6 +62,22 @@
 	header('Content-type: application/x-openvpn-profile');
 
 	echo $ovpn_config;
+
+	function find_domain($realm) {
+		$realm_components = explode('/', $realm);
+		if (count($realm_components) > 1) {
+			return array(end($realm_components));
+		}
+	}
+
+	function default_servers($realm, $servers) {
+		foreach ($servers as $domain) {
+			if (str_ends_with($realm, '/'. $domain)) {
+				return array($domain);
+			}
+		}
+		return sort_servers($servers, count($servers) - 1);
+	}
 
 	function sort_servers($servers, $base_index) {
 		$step = 1;
