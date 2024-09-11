@@ -60,7 +60,9 @@ class UserStatsController extends AppController {
         if($span == 'monthly'){
             $ret_info    = $this->_getMonthly($day);  
         }
-        
+
+        $overal = $this->_getOveral();
+
         if($ret_info){
             $this->set([
                 'items'         => $ret_info['items'],
@@ -70,10 +72,16 @@ class UserStatsController extends AppController {
                     'totalIn'       => $ret_info['total_in'],
                     'totalOut'      => $ret_info['total_out'],
                     'totalInOut'    => $ret_info['total_in_out'],
+                    'overalIn'      => $overal['overal_in'],
+                    'overalOut'     => $overal['overal_out'],
+                    'overalInOut'   => $overal['overal_in_out'],
                 ],
                 'totalIn'       => $ret_info['total_in'],
                 'totalOut'      => $ret_info['total_out'],
-                'totalInOut'    => $ret_info['total_in_out']
+                'totalInOut'    => $ret_info['total_in_out'],
+                'overalIn'      => $overal['overal_in'],
+                'overalOut'     => $overal['overal_out'],
+                'overalInOut'   => $overal['overal_in_out']
             ]);
             
         }else{
@@ -238,6 +246,28 @@ class UserStatsController extends AppController {
         }    
         //$base_search    = $this->base_search; //FIXME WE DONT NEED THIS
         return(['items' => $items, 'total_in' => $total_in, 'total_out' => $total_out, 'total_in_out' => $total_in_out]);
+    }
+
+    private function _getOveral() {
+
+        $base_search    = $this->_base_search();
+
+        $this->_setTimeZone();
+
+        $overal_in       = 0;
+        $overal_out      = 0;
+        $overal_in_out   = 0;
+
+        $where = $base_search;
+
+        $q_r = $this->{$this->main_model}->find()->select($this->fields)->where($base_search)->first();
+        if($q_r) {
+            $overal_in       = $q_r->data_in;
+            $overal_out      = $q_r->data_out;
+            $overal_in_out   = $overal_in + $overal_out;
+        }
+
+        return(['overal_in' => $overal_in, 'overal_out' => $overal_out, 'overal_in_out' => $overal_in_out]);
     }
 
     private function _base_search(){
