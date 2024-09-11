@@ -8,18 +8,17 @@
 	##		rewrite ^/cert/(.+)$ /cake4/rd_cake/src/Controller/Certificates.php?realm=$1;
 	##	}
 
-	$username = $_GET['user'];
-	$password = $_GET['token'];
 	$realm = $_GET['realm'];
 	$options = $_GET['options'];
 
 	$ovpn_config = file_get_contents('../../resources/configs/default.ovpn');
 
-	$servers = array('lo-a', 'fr-a', 'fr-b', 'hl-a');
-	$title = 'None';
+	$servers = array('lo-a', 'lo-b', 'lo-c');
 
 	switch ($realm) {
 		case 'Amir':
+			$servers = array('amr-a');
+			break;
 		case 'Always':
 		case 'RyLondon':
 			$servers = sort_servers($servers, 0);
@@ -27,55 +26,47 @@
 		case 'RyFrankfort':
 			$servers = sort_servers($servers, 1);
 			break;
-		case 'RyHelsinki':
-			$servers = sort_servers($servers, 3);
-			break;
 		case 'MehrAzar':
+		case 'RyHelsinki':
 			$servers = sort_servers($servers, 2);
 			break;
 		default:
-			$servers = sort_servers($servers, count($servers) - 1);
+			$domains = array();
+			foreach ($servers as $domain) {
+				if (strpos($realm, '('. $domain .')') === 0) {
+					array_push($domains, $domain);
+				}
+			}
+			if (count($array) > 0) {
+				$servers = $domains;
+			} else {
+				$servers = sort_servers($servers, count($servers) - 1);
+			}
+			break;
 	}
 
-	if (strpos($servers[0], 'hl-') === 0)
-		$title = 'Helsinki';
-	else if (strpos($servers[0], 'fr-') === 0)
-		$title = 'Frankfort';
-	else if (strpos($servers[0], 'lo-') === 0)
-		$title = 'London';
+	$title = '.none';
+	$remote = 'Photon';
 
-	if ($options == 'single') {
+	if ($options === 'all') {
+		$remote .= '+';
+	} else if (count($servers) > 0) {
+		$remote .= ' (' . get_title($servers[0]) . ')';
 		$servers = array($servers[0]);
-	} else {
-		$title .= '+';
 	}
 
-	$title = "\nsetenv FRIENDLY_NAME \"$title\"\n";
-	foreach ($servers as $domain)
-		$title .= "remote $domain.photon-bypass.com\n";
+	$remote = "\nsetenv FRIENDLY_NAME \"$remote\"\n";
+	foreach ($servers as $domain) {
+		if ($title === '.none') {
+			$title = ".$domain.photon-bypass";
+		}
+		$remote .= "remote $domain.photon-bypass.com\n";
+	}
 
 	# replace remote
-	$ovpn_config = preg_replace("/(^|\\n)remote\s.*(\\n|$)/i", $title, $ovpn_config);
+	$ovpn_config = preg_replace("/(^|\\n)remote\s.*(\\n|$)/i", $remote, $ovpn_config);
 
-	# remove current user info
-	$ovpn_config = preg_replace("/(^|\\n)auth-user-pass(\\n|$)/i", "\n", $ovpn_config);
-
-	# remove current user info
-	$ovpn_config = preg_replace("/<auth-user-pass>[^<]*<\/auth-user-pass>\\n?/i", '', $ovpn_config);
-
-	if (!empty($password)) {
-		$ovpn_config = preg_replace("/<key>/i",
-			"<auth-user-pass>\n$username\n$password\n</auth-user-pass>\n<key>",
-			$ovpn_config);
-	} else {
-		$ovpn_config = preg_replace("/<key>/i", "auth-user-pass\n<key>", $ovpn_config);
-	}
-
-	if (empty($username)) {
-		$username = 'global';
-	}
-
-	header("Content-Disposition: attachment; filename=\"config-$username.ovpn\"");
+	header("Content-Disposition: attachment; filename=\"config$title.ovpn\"");
 	header('Content-type: application/x-openvpn-profile');
 
 	echo $ovpn_config;
@@ -96,4 +87,9 @@
 		return $sorted_result;
 	}
 
+	function get_title($server_name) {
+		$server_name = strtoupper($server_name);
+		$server_name = str_replace('LO', 'ARV', $server_name);
+		return $server_name;
+	}
 ?>
