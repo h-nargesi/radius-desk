@@ -27,6 +27,13 @@ Ext.define('Rd.view.dataUsage.pnlDataUsage', {
                     {  
                         glyph   : Rd.config.icnReload,    
                         scale   : scale, 
+                        itemId  : 'showall',
+                        ui      : 'button-pink',   
+                        tooltip : 'Show All'
+                    },
+                    {  
+                        glyph   : Rd.config.icnReload,    
+                        scale   : scale, 
                         itemId  : 'reload',
                         ui      : 'button-orange',   
                         tooltip: i18n('sReload')

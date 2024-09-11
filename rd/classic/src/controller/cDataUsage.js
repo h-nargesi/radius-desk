@@ -95,6 +95,9 @@ Ext.define('Rd.controller.cDataUsage', {
             'pnlDataUsage datefield' : {
                 change      : me.dateChange  
             },
+            'pnlDataUsage #showall' : {
+                click      : me.showall   
+            },
             'pnlDataUsage #reload' : {
                 click      : me.reload   
             },
@@ -143,6 +146,11 @@ Ext.define('Rd.controller.cDataUsage', {
     appClose:   function(){
         var me          = this;
         me.populated    = false;
+    },
+    showall: function(){
+        var me = this;
+        me.setType(null)
+        me.fetchDataUsage();
     },
     reload: function(){
         var me = this;
