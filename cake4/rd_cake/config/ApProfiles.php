@@ -21,10 +21,10 @@ $config['common_ap_settings']['password_hash']  	    = '$1$TJn8xhHP$BLhc3QEW54de
 $config['common_ap_settings']['heartbeat_dead_after']   = 300; //Mark a device as dead if we have not had heartbeats in this time
 
 //Timezone addition
-$config['common_ap_settings']['timezone']	        = 24; 		//Take the number from $config['ApProfiles']['timezones']
-$config['common_ap_settings']['country']	        = 'ZA'; 	//Take the value from $config['ApProfiles']['countries']
-$config['common_ap_settings']['tz_name']	        = 'Africa/Johannesburg'; 	//Take the name from $config['ApProfiles']['countries']
-$config['common_ap_settings']['tz_value']	        = 'SAST-2'; 	//Take the name from $config['ApProfiles']['countries']
+$config['common_ap_settings']['timezone']	        = 262; 		//Take the number from $config['ApProfiles']['timezones']
+$config['common_ap_settings']['country']	        = 'IR'; 	//Take the value from $config['ApProfiles']['countries']
+$config['common_ap_settings']['tz_name']	        = 'Asia/Tehran'; 	//Take the name from $config['ApProfiles']['countries']
+$config['common_ap_settings']['tz_value']	        = 'IRST-3:30IRDT,80/0,264/0'; 	//Take the name from $config['ApProfiles']['countries']
 
 
 

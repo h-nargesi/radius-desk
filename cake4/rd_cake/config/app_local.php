@@ -50,7 +50,7 @@ return [
             // Comment out the line below if you are using PostgreSQL
             ////'encoding' => 'utf8mb4',
          	'encoding' => 'utf8',
-            'timezone' => 'UTC',
+            'timezone' => 'Asia/Tehran',
             'cacheMetadata' => true,
             'log'	=> false,
             'url' => env('DATABASE_URL', null),
@@ -75,7 +75,7 @@ return [
             // Comment out the line below if you are using PostgreSQL
             ////'encoding' => 'utf8mb4',
          	'encoding' => 'utf8',
-            'timezone' => 'UTC',
+            'timezone' => 'Asia/Tehran',
             'cacheMetadata' => true,
             'log'	=> false,
             'url' => env('DATABASE_URL', null),

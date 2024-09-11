@@ -76,10 +76,10 @@ $config['common_node_settings']['eth_br_with']		= 0; 		//Zero has a special mean
 $config['common_node_settings']['eth_br_for_all']	= false; 		//Apply this bridge to all non-gateway nodes
 
 //Timezone addition
-$config['common_node_settings']['timezone']	        = 232; 		//Take the number from $config['MESHdesk']['timezones']
-$config['common_node_settings']['country']	        = 'US'; 	//Take the value from $config['MESHdesk']['countries']
-$config['common_node_settings']['tz_name']	        = 'Asia/Kolkata'; 	//Take the name from $config['MESHdesk']['countries']
-$config['common_node_settings']['tz_value']	        = 'IST-5:30'; 	//Take the name from $config['MESHdesk']['countries']
+$config['common_node_settings']['timezone']	        = 262; 		//Take the number from $config['MESHdesk']['timezones']
+$config['common_node_settings']['country']	        = 'IR'; 	//Take the value from $config['MESHdesk']['countries']
+$config['common_node_settings']['tz_name']	        = 'Asia/Tehran'; 	//Take the name from $config['MESHdesk']['countries']
+$config['common_node_settings']['tz_value']	        = 'IRST-3:30IRDT,80/0,264/0'; 	//Take the name from $config['MESHdesk']['countries']
 
 //Gateway specific tweaks
 $config['common_node_settings']['gw_dhcp_timeout']  = 120;	//
