@@ -80,6 +80,8 @@ Ext.define('Rd.view.components.pnlUsageGraph', {
                     "<label class='lblTipItem'>OUT  <span style='color:#5c5f63;'>{out}</span></label>",
                     "<div style='clear:both;'></div>",
                     "<label class='lblTipItem'>TOTAL  <span style='color:#5c5f63;'>{total}</span></label>",
+                    "<div style='clear:both;'></div>",
+                    "<label class='lblTipItem'>OVERAL  <span style='color:#635f5c;'>{overal}</span></label>",
                     "</div>"
                 ],
                 style   : 'margin-right:5px', 
@@ -110,7 +112,8 @@ Ext.define('Rd.view.components.pnlUsageGraph', {
                     var totalIn     = Ext.ux.bytesToHuman(rawData.totalIn);
                     var totalOut    = Ext.ux.bytesToHuman(rawData.totalOut);
                     var totalInOut  = Ext.ux.bytesToHuman(rawData.totalInOut);
-                    me.down('#totals').update({'in': totalIn, 'out': totalOut, 'total': totalInOut });
+                    var overalInOut = Ext.ux.bytesToHuman(rawData.overalInOut);
+                    me.down('#totals').update({'in': totalIn, 'out': totalOut, 'total': totalInOut, 'overal': overalInOut });
                 }
             },
             autoLoad: false   
