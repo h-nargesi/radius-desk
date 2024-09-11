@@ -681,9 +681,11 @@ class RadacctsController extends AppController {
                 ],
                 [
                     'xtype'         => 'cmbTimezones', 
-                    'width'         => 200, 
+                    'width'         => 300, 
                     'itemId'        => 'cmbTimezone',
-                    'name'          => 'timezone_id', 
+                    'name'          => 'timezone_id',
+                    'labelClsExtra' => 'lblRdReq',
+                    'labelWidth'    => 75,
                     'fieldLabel'    => '',
                     'padding'       => '7 0 0 0',
                     'margin'        => 0,
