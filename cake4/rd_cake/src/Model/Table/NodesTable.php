@@ -5,6 +5,7 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
+use Cake\I18n\FrozenTime;
 
 class NodesTable extends Table{
 
@@ -40,7 +41,7 @@ class NodesTable extends Table{
 					'NodeUptmHistories.state_datetime ASC'
 				],
 				'conditions'	=> [
-					'NodeUptmHistories.modified > DATE_SUB(now(),INTERVAL 1 DAY)'
+					"NodeUptmHistories.modified >" => FrozenTime::now()->subHour(24)
 				]
 			]);
          $this->hasMany('Notifications',  [
@@ -80,7 +81,7 @@ class NodesTable extends Table{
             ->add('mac', [ 
                 'nameUnique' => [
                     'message' => 'The MAC you provided is already taken. Please provide another one.',
-                    'rule' => 'validateUnique', 
+                     'rule'    => ['validateUnique', ['scope' => 'mesh_id']],
                     'provider' => 'table'
                 ]
             ]);

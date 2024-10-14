@@ -171,6 +171,32 @@
   flex: 1; /* or width: 50% */
 }
 
+.rdCombo .x-form-text-default {
+    color: #29465b; /* Change text color */
+    font-size: 18px; /* Change text size */
+    background-color: #b6b7b982;
+}
 
+.split-dataview-item {
+    display: flex;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    font-size: 16px;
+    color: #124765;
+}
+
+.split-dataview-column1, .split-dataview-column2 {
+    flex: 1;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.split-dataview-column1:hover, .split-dataview-column2:hover {
+    background-color: #f0f0f0;
+}
+
+.split-dataview-column1.selected, .split-dataview-column2.selected {
+    background-color: #d0e5f5;
+}
 
 

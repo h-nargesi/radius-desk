@@ -427,7 +427,7 @@ class RadacctsController extends AppController {
         $q_r    = $query->all();
         
         $query_total = $this->{$this->main_model}->find();
-        if(!$this->_build_common_query($query_total, $user)){
+        if(!$this->_build_common_query($query_total, $user,true)){
         	return;
         }
         $t_q    = $query_total->select($fields)->first();
@@ -739,7 +739,7 @@ class RadacctsController extends AppController {
 
     //______ END EXT JS UI functions ________
 
-  	function _build_common_query($query, $user){
+  	function _build_common_query($query, $user,$totals=false){ //We add the $totals flag. If it is set to true; we do not do the sort part (breaks with Postgresql)
 
         $where = [];
         $joins = [];     
@@ -773,6 +773,7 @@ class RadacctsController extends AppController {
         //Default values for sort and dir
         $sort   = 'Radaccts.username';
         $dir    = 'DESC';
+        
 
         if($this->request->getQuery('sort')){
             //Permanent users (extra info)
@@ -788,9 +789,12 @@ class RadacctsController extends AppController {
                 $sort = 'Radaccts.acctstarttime';
             }
             $dir  = $this->request->getQuery('dir');
-        } 
+        }
+        
+        if(!$totals){        
+            $query->order([$sort => $dir]);
+        }
 
-        $query->order([$sort => $dir]);
         //==== END SORT ===
 
         //======= For a specified username filter *Usually on the edit of user / voucher ======
@@ -811,7 +815,7 @@ class RadacctsController extends AppController {
             $filter = json_decode($req_q['filter']); 
 
             foreach($filter as $f){
-                          
+                                      
                 //Strings
                 if($f->operator == 'like'){
                     //Permanent Users' properties will start with pu_
@@ -835,14 +839,14 @@ class RadacctsController extends AppController {
                 if(($f->operator == 'gt')||($f->operator == 'lt')||($f->operator == 'eq')){
                     //date we want it in "2013-03-12"
                     $col = $this->main_model.'.'.$f->property;
-                    if($f->comparison == 'eq'){
+                    if($f->operator == 'eq'){
                         array_push($where, ["DATE($col)" => $f->value]);
                     }
 
-                    if($f->comparison == 'lt'){
+                    if($f->operator == 'lt'){
                         array_push($where, ["DATE($col) <" => $f->value]);
                     }
-                    if($f->comparison == 'gt'){
+                    if($f->operator == 'gt'){
                         array_push($where, ["DATE($col) >" => $f->value]);
                     }
                 }

@@ -4,6 +4,7 @@ namespace App\Model\Table;
 
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\I18n\FrozenTime;
 
 class ApsTable extends Table {
 
@@ -38,7 +39,7 @@ class ApsTable extends Table {
 					'ApUptmHistories.state_datetime ASC'
 				],
 				'conditions'	=> [
-					'ApUptmHistories.modified > DATE_SUB(now(),INTERVAL 1 DAY)'
+					'ApUptmHistories.modified >' => FrozenTime::now()->subHour(24)
 				]
 			]);
          $this->hasMany('Notifications',  [
@@ -75,7 +76,7 @@ class ApsTable extends Table {
             ->add('name', [
                 'nameUnique' => [
                     'message' => 'This Device name is already taken',
-                    'rule' => 'validateUnique',
+                    'rule'    => ['validateUnique', ['scope' => 'ap_profile_id']],
                     'provider' => 'table'
                 ]
             ])
