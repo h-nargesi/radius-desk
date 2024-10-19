@@ -16,21 +16,8 @@ class MwanInterfaceSettingsTable extends Table {
         $validator = new Validator();
         $validator
             ->notEmpty('name', 'A name is required')
-            ->notEmpty('metric', 'A metric is required')
-            ->add('metric', [ 
-                'metricUnique' => [
-                    'message'   => 'The Metric you provided is already taken. Please provide another one.',
-                    'rule'    => ['validateUnique', ['scope' => 'multi_wan_profile_id']],
-                    'provider'  => 'table'
-                ]
-            ])
-            ->add('name', [ 
-                'nameUnique' => [
-                    'message'   => 'The name you provided is already taken. Please provide another one.',
-                    'rule'    => ['validateUnique', ['scope' => 'multi_wan_profile_id']],
-                    'provider'  => 'table'
-                ]
-            ]);           
+            ->notEmpty('value', 'A value is required')
+            ->notEmpty('grouping', 'A grouping is required');        
         return $validator;
     }      
 }

@@ -13,7 +13,8 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
     config: {
         urlAdd          : '/cake4/rd_cake/multi-wan-profiles/add.json',
         urlDelete       : '/cake4/rd_cake/multi-wan-profiles/delete.json',
-		urlEdit         : '/cake4/rd_cake/multi-wan-profiles/edit.json'
+		urlEdit         : '/cake4/rd_cake/multi-wan-profiles/edit.json',
+		UrlDeleteInter  : '/cake4/rd_cake/multi-wan-profiles/interface-delete.json'
     },
     control: {
     	'pnlMultiWanProfiles #reload': {
@@ -28,6 +29,9 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
         'pnlMultiWanProfiles #edit': {
             click: 'edit'
         },
+        'pnlMultiWanProfiles cmbMultiWanProfile': {
+           change   : 'cmbMultiWanProfileChange'
+        },
         'pnlMultiWanProfiles #dvMultiWanProfiles' : {
         	itemclick	: 'itemSelected'
         }, 
@@ -36,14 +40,11 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
         },
         'winMultiWanProfileEdit #btnSave' : {
             click   : 'btnEditSave'
-        },
-        'winMultiWanProfileInterfaceAdd #save': {
-            click   : 'btnInterfaceAddSave'
-        }        
+        }       
     },
     itemSelected: function(dv,record){
     	var me = this;
-    	//--Add FirewallProfile Component--
+    	//--Add Multi-WAN Profile Component--
     	if(record.get('type') == 'add'){
     		if(!me.rightsCheck(record)){
 	    		return;
@@ -62,7 +63,7 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
                     interface_id            : 0,
                     xtype                   : 'pnlMultiWanProfileInterfaceAddEdit',
                     multi_wan_profile_id    : record.get('multi_wan_profile_id'),
-                    multi_wan_profile_name  : record.get('multi_wan_profile_name'),
+                    multi_wan_profile_name  : record.get('name'),
                     store                   : me.getView().down('#dvMultiWanProfiles').getStore()
                      
                 });
@@ -95,6 +96,7 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
             success: function(form, action) {
                 win.close();
                 me.reload();
+                me.reloadComboBox();
                 Ext.ux.Toaster.msg(
                     i18n('sNew_item_created'),
                     i18n('sItem_created_fine'),
@@ -104,10 +106,9 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
             },
             failure: Ext.ux.formFail
         });
-        },
-    del:   function(){
-        var me      = this;     
-        //Find out if there was something selected
+    },
+    del: function(button) {
+        var me      = this;        
         if(me.getView().down('#dvMultiWanProfiles').getSelectionModel().getCount() == 0){
             Ext.ux.Toaster.msg(
                         i18n('sSelect_an_item'),
@@ -116,43 +117,57 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
                         Ext.ux.Constants.msgWarn
             );
         }else{
-            Ext.MessageBox.confirm(i18n('sConfirm'), i18n('sAre_you_sure_you_want_to_do_that_qm'), function(val){
-                if(val== 'yes'){
-                    var selected    = me.getView().down('#dvMultiWanProfiles').getSelectionModel().getSelection();
-                    var list        = [];
-                    Ext.Array.forEach(selected,function(item){
-                        var id = item.get('id');
-                        Ext.Array.push(list,{'id' : id});
-                    });
-                    Ext.Ajax.request({
-                        url: me.getUrlDelete(),
-                        method: 'POST',          
-                        jsonData: list,
-                        success: function(batch,options){console.log('success');
-                            Ext.ux.Toaster.msg(
-                                i18n('sItem_deleted'),
-                                i18n('sItem_deleted_fine'),
-                                Ext.ux.Constants.clsInfo,
-                                Ext.ux.Constants.msgInfo
-                            );
-                            me.reload();
-                        },                                    
-                        failure: function (response, options) {
-                            var jsonData = Ext.JSON.decode(response.responseText);
-                            Ext.Msg.show({
-                                title       : "Error",
-                                msg         : response.request.url + '<br>' + response.status + ' ' + response.statusText+"<br>"+jsonData.message,
-                                modal       : true,
-                                buttons     : Ext.Msg.OK,
-                                icon        : Ext.Msg.ERROR,
-                                closeAction : 'destroy'
-                            });
-                            me.reload(); //Reload from server
-                        }
-                    });
-                }
-            });
-        }
+        	var sr   =  me.getView().down('#dvMultiWanProfiles').getSelectionModel().getLastSelected();
+        	
+        	if(!me.rightsCheck(sr)){
+	    		return;
+	    	}
+        	
+		    if(sr.get('type') == 'multi_wan_profile'){
+		    	 me.delMwanProfile();
+		    }
+		    
+		    if(sr.get('type') == 'mwan_interface'){
+		        me.delMwanInterface();            
+		    }            
+        }      
+    },           
+    delMwanProfile:   function(){
+        var me      = this;     
+        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the Multi-WAN Profile and ALL its Interfaces' , function(val){
+            if(val== 'yes'){
+                var selected    = me.getView().down('#dvMultiWanProfiles').getSelectionModel().getSelection();
+                var list        = [];
+                Ext.Array.forEach(selected,function(item){
+                    var id = item.get('multi_wan_profile_id');
+                    Ext.Array.push(list,{'id' : id});
+                });
+                Ext.Ajax.request({
+                    url: me.getUrlDelete(),
+                    method: 'POST',          
+                    jsonData: list,
+                    success: function(batch,options){
+                        Ext.ux.Toaster.msg(
+                            i18n('sItem_deleted'),
+                            i18n('sItem_deleted_fine'),
+                            Ext.ux.Constants.clsInfo,
+                            Ext.ux.Constants.msgInfo
+                        );
+                        me.reload(); //Reload from server
+                        me.reloadComboBox();
+                    },                                    
+                    failure: function(batch,options){
+                        Ext.ux.Toaster.msg(
+                            i18n('sProblems_deleting_item'),
+                            batch.proxy.getReader().rawData.message.message,
+                            Ext.ux.Constants.clsWarn,
+                            Ext.ux.Constants.msgWarn
+                        );
+                        me.reload(); //Reload from server
+                    }
+                });
+            }
+        });
     },
     edit: function(button) {
         var me      = this;
@@ -169,12 +184,20 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
 		    if(!me.rightsCheck(sr)){
 	    		return;
 	    	}
-	    	if(!Ext.WindowManager.get('winMultiWanProfileEditId')){
-                var w = Ext.widget('winMultiWanProfileEdit',{id:'winMultiWanProfileEditId',record: sr,root: me.root});
-                me.getView().add(w); 
-                let appBody = Ext.getBody();
-                w.showBy(appBody);      
-            }			  		  	  
+		    if(sr.get('type') == 'multi_wan_profile'){
+				if(!Ext.WindowManager.get('winFirewallProfileEditId')){
+				    if(!Ext.WindowManager.get('winMultiWanProfileEditId')){
+                        var w = Ext.widget('winMultiWanProfileEdit',{id:'winMultiWanProfileEditId',record: sr,root: me.root});
+                        me.getView().add(w); 
+                        let appBody = Ext.getBody();
+                        w.showBy(appBody);      
+                    }      
+		        }
+		  	}
+		  	
+		    if(sr.get('type') == 'mwan_interface'){		   
+		        me.editMwanInterface(sr);				
+	      	}	  			  		  	  
         }     
     },
     btnEditSave:function(button){
@@ -198,26 +221,73 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
             failure             : Ext.ux.formFail
         });
     },
-    btnInterfaceAddSave : function(button){
+    editMwanInterface :  function(sr){
         var me      = this;
-        var form    = button.up('form');
-        var win     = button.up('winMultiWanProfileInterfaceAdd');
-        //Checks passed fine...      
-        form.submit({
-            clientValidation    : true,
-            url                 : me.getUrlAddInterface(),
-            success             : function(form, action) {
-                Ext.ux.Toaster.msg(
-                    'Item added Fine',
-                    'Item added Fine',
-                    Ext.ux.Constants.clsInfo,
-                    Ext.ux.Constants.msgInfo
-                );
-                me.reload();
-                win.close();
-            },
-            failure             : Ext.ux.formFail
-        }); 
+        var tp      = me.getView().up('tabpanel');
+    	var id		= 'tabInterfaceAddEdit'+ sr.getId();
+    	
+    	var newTab  = tp.items.findBy(
+        function (tab){
+            return tab.getItemId() === id;
+        });
+     
+        if (!newTab){
+            newTab = tp.add({
+                itemId                  : id,
+                interface_id            : sr.getId(),
+                interface_name          : sr.get('name'),
+                multi_wan_profile_id    : sr.get('multi_wan_profile_id'),
+                xtype                   : 'pnlMultiWanProfileInterfaceAddEdit',
+                store                   : me.getView().down('#dvMultiWanProfiles').getStore()               
+            });
+        }    
+        tp.setActiveTab(newTab);
+    },
+    delMwanInterface :   function(){
+        var me      = this;     
+        //Find out if there was something selected
+        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the selected Multi-WAN Interface' , function(val){
+            if(val== 'yes'){
+                var selected    = me.getView().down('#dvMultiWanProfiles').getSelectionModel().getSelection();
+                var list        = [];
+                Ext.Array.forEach(selected,function(item){
+                    var id = item.getId();
+                    Ext.Array.push(list,{'id' : id});
+                });
+                Ext.Ajax.request({
+                    url     : me.getUrlDeleteInter(),
+                    method  : 'POST',          
+                    jsonData: list,
+                    success : function(batch,options){
+                        Ext.ux.Toaster.msg(
+                            i18n('sItem_deleted'),
+                            i18n('sItem_deleted_fine'),
+                            Ext.ux.Constants.clsInfo,
+                            Ext.ux.Constants.msgInfo
+                        );
+                        me.reload(); //Reload from server
+                    },                                    
+                    failure: function(batch,options){
+                        Ext.ux.Toaster.msg(
+                            i18n('sProblems_deleting_item'),
+                            batch.proxy.getReader().rawData.message.message,
+                            Ext.ux.Constants.clsWarn,
+                            Ext.ux.Constants.msgWarn
+                        );
+                        me.reload(); //Reload from server
+                    }
+                });
+            }
+        });
+    },
+    cmbMultiWanProfileChange: function(cmb,new_value){
+    	var me = this;
+    	me.getView().down('#dvMultiWanProfiles').getStore().getProxy().setExtraParams({id:new_value});
+ 		me.reload();
+    },
+    reloadComboBox: function(){  
+    	var me = this;
+    	me.getView().down('cmbMultiWanProfile').getStore().reload();
     },
     rightsCheck: function(record){
     	var me = this;

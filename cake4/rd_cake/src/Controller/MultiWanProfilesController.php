@@ -60,7 +60,7 @@ class MultiWanProfilesController extends AppController {
         // Include all option if requested
         if (!empty($req_q['include_all_option'])) {
              if($req_q['include_all_option'] == true){
-		    	$items[] = ['id' => 0, 'name' => '**All Multi-Wan Profiles**'];    
+		    	$items[] = ['id' => 0, 'name' => '**All Multi-WAN Profiles**'];    
 		    }         
         }
 
@@ -117,10 +117,10 @@ class MultiWanProfilesController extends AppController {
         foreach ($q_r as $i) {
        
             $row            = [];       
-			$row['id']      = $i->id.'_0'; //Signifies Firewall Profile
+			$row['id']      = $i->id.'_0'; //Signifies Multi-WAN Profile
 			$row['name']	= $i->name;
 			$row['type']    = 'multi_wan_profile';
-			$row['firewall_profile_id'] = $i->id;
+			$row['multi_wan_profile_id'] = $i->id;
 			
 			$for_system = false;
             if($i->cloud_id == -1){
@@ -149,51 +149,7 @@ class MultiWanProfilesController extends AppController {
         ]);
         $this->viewBuilder()->setOption('serialize', true);
     }
-             
-  	public function indexDataViewZZ(){
-        //__ Authentication + Authorization __
-        $user = $this->_ap_right_check();
-        if (!$user) {
-            return;
-        }
-
-        $req_q    = $this->request->getQuery();      
-       	$cloud_id = $req_q['cloud_id'];
-        $query 	  = $this->{$this->main_model}->find();      
-        $this->CommonQueryFlat->cloud_with_system($query,$cloud_id,[]);
-        
-
-        //===== PAGING (MUST BE LAST) ======
-        $limit = 50;   //Defaults
-        $page = 1;
-        $offset = 0;
-        if (isset($req_qy['limit'])) {
-            $limit  = $req_q['limit'];
-            $page   = $req_q['page'];
-            $offset = $req_q['start'];
-        }
-
-        $query->page($page);
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $total  = $query->count();
-        $q_r    = $query->all();
-        $items  = [];
-
-        foreach ($q_r as $i) {		
-			array_push($items, $i);
-        }
-        
-        //___ FINAL PART ___
-        $this->set([
-            'items'         => $items,
-            'success'       => true,
-            'totalCount'    => $total
-        ]);
-        $this->viewBuilder()->setOption('serialize', true);
-    }
-    
+               
     public function add(){
      
         $user = $this->_ap_right_check();
@@ -333,6 +289,35 @@ class MultiWanProfilesController extends AppController {
         }
     }
     
+    public function interfaceView(){
+    
+        $user = $this->_ap_right_check();
+        if(!$user){
+            return;
+        }
+               
+        $req_q  = $this->request->getQuery();
+        $id     = $req_q['interface_id'];  
+        $data   = [];
+        $entity = $this->{'MwanInterfaces'}->find()->where(['MwanInterfaces.id' => $id])->contain(['MwanInterfaceSettings'])->first();
+        if($entity){ 
+        
+            foreach($entity->mwan_interface_settings as $mwanInterfaceSetting){
+                if($mwanInterfaceSetting->grouping == 'wbw_setting'){
+                    $entity->{'wbw_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
+                }          
+            }
+            unset($entity->mwan_interface_settings);
+                
+            $data =  $entity;                    
+        }
+        $this->set([
+            'data'      => $data,
+            'success'   => true
+        ]);
+        $this->viewBuilder()->setOption('serialize', true);        
+    }
+    
     public function interfaceAddEdit(){
 	   
 		if (!$this->request->is('post')) {
@@ -358,6 +343,7 @@ class MultiWanProfilesController extends AppController {
                 //New MwanInterface 
                 $mwanInterface = $this->MwanInterfaces->newEntity($req_d); 
                 if ($this->MwanInterfaces->save($mwanInterface)) {
+                    $this->_addInterfaceSettings($mwanInterface->id);
                     $this->set([
                         'success' => true
                     ]);
@@ -366,7 +352,14 @@ class MultiWanProfilesController extends AppController {
                     $message = __('Could not update item');
                     $this->JsonErrors->entityErros($mwanInterface,$message);
                 }          
-            }
+            }else{
+            
+                $mwanInterface = $this->MwanInterfaces->find()->contain([])->where(['MwanInterfaces.id' => $this->request->getData('id')])->first();
+                if($mwanInterface){
+                    $this->MwanInterfaceSettings->deleteAll(['MwanInterfaceSettings.mwan_interface_id' => $mwanInterface->id]);
+                    $this->_addInterfaceSettings($mwanInterface->id);               
+                }         
+            }          
                        
              $this->set([
                 'success' => true
@@ -375,14 +368,87 @@ class MultiWanProfilesController extends AppController {
         }
     }
     
-       	    	
+    private function _addInterfaceSettings($mwan_interface_id){
+    
+        $cdata = $this->request->getData();
+        
+        if($this->request->getData('type') == 'wifi'){
+            foreach(array_keys($cdata) as $key){
+                if(preg_match('/^wbw_/',$key)){             
+                    $d      = [];
+                    $d['mwan_interface_id'] = $mwan_interface_id;
+                    $d['grouping']  = 'wbw_setting';
+                    $d['name']      = preg_replace('/^wbw_/', '', $key);
+                    $d['value']     = $cdata["$key"];                                  
+                    $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                    $this->{'MwanInterfaceSettings'}->save($e);    
+                }
+            } 
+        }
+        
+        if($this->request->getData('type') == 'lte'){
+            foreach(array_keys($cdata) as $key){
+                if(preg_match('/^qmi_/',$key)){             
+                    $d      = [];
+                    $d['mwan_interface_id'] = $mwan_interface_id;
+                    $d['grouping']  = 'qmi_setting';
+                    $d['name']      = preg_replace('/^qmi_/', '', $key);
+                    $d['value']     = $cdata["$key"];                                  
+                    $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                    $this->{'MwanInterfaceSettings'}->save($e);    
+                }
+            } 
+        }   
+    
+    }
+    
+    public function interfaceDelete() {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+
+        //__ Authentication + Authorization __
+        $user = $this->_ap_right_check();
+        if(!$user){
+            return;
+        }
+
+        $fail_flag 	= false;
+        $req_d 		= $this->request->getData();
+
+	    if(isset($req_d['id'])){   //Single item delete
+            $message = "Single item ".$req_d['id'];       
+            $entity     = $this->{'MwanInterfaces'}->get($req_d['id']);   
+            $this->{'MwanInterfaces'}->delete($entity);
+             
+        }else{                          //Assume multiple item delete
+            foreach($req_d as $d){
+                $entity     = $this->{'MwanInterfaces'}->get($d['id']);     
+                $this->{'MwanInterfaces'}->delete($entity);                
+            }
+        }
+
+        if($fail_flag == true){
+            $this->set([
+                'success'   => false,
+                'message'   => __('Could not delete some items'),
+            ]);
+            $this->viewBuilder()->setOption('serialize', true);
+        }else{
+            $this->set([
+                'success' => true
+            ]);
+            $this->viewBuilder()->setOption('serialize', true);
+        }
+	}
+          	    	
     public function menuForGrid(){
         $user = $this->Aa->user_for_token($this);
         if(!$user){   //If not a valid user
             return;
         }
         
-        $menu = $this->GridButtonsFlat->returnButtons(false,'basic');
+        $menu = $this->GridButtonsFlat->returnButtons(false,'MwanProfiles');
         $this->set([
             'items'         => $menu,
             'success'       => true

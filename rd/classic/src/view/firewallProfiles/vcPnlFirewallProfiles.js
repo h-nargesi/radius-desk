@@ -188,7 +188,7 @@ Ext.define('Rd.view.firewallProfiles.vcPnlFirewallProfiles', {
     },           
     delFirewallProfile:   function(){
         var me      = this;     
-        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the Friewall Profile and ALL its Firewall Profile Entries' , function(val){
+        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the Firewall Profile and ALL its Firewall Profile Entries' , function(val){
             if(val== 'yes'){
                 var selected    = me.getView().down('#dvFirewallProfiles').getSelectionModel().getSelection();
                 var list        = [];
@@ -290,7 +290,7 @@ Ext.define('Rd.view.firewallProfiles.vcPnlFirewallProfiles', {
     delFirewallProfileEntry:   function(){
         var me      = this;     
         //Find out if there was something selected
-        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the selected Friewall Profile Entries' , function(val){
+        Ext.MessageBox.confirm(i18n('sConfirm'), 'This will DELETE the selected Firewall Profile Entry' , function(val){
             if(val== 'yes'){
                 var selected    = me.getView().down('#dvFirewallProfiles').getSelectionModel().getSelection();
                 var list        = [];

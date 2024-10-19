@@ -44,6 +44,8 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
         var me 		= this;
         if(me.interface_id == 0){
             me.setTitle('Add Interface To '+me.multi_wan_profile_name);
+        }else{
+            me.setTitle('Edit Interface '+me.interface_name);
         }
         
         var w_prim  = 600;
@@ -329,6 +331,12 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
             },
             items       : [
                 {
+                    xtype   : 'textfield',
+                    name    : 'multi_wan_profile_id',
+                    value   : me.multi_wan_profile_id,
+                    hidden  : true
+                },
+                {
                     xtype       : 'textfield',
                     name        : 'id',
                     hidden      : true,
@@ -352,12 +360,6 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                 anchor  : '100%'
             },
             items       : [
-                {
-                    xtype   : 'textfield',
-                    name    : 'multi_wan_profile_id',
-                    value   : me.multi_wan_profile_id,
-                    hidden  : true
-                },
                 {
                     xtype   : 'textfield',
                     name    : 'type',
@@ -421,7 +423,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                 },
                  {
                     xtype   : 'textfield',
-                    name    : 'method',
+                    name    : 'method_protocol',
                     itemId	: 'txtMethod',
                     hidden  : true,
                     value	: 'dhcp'

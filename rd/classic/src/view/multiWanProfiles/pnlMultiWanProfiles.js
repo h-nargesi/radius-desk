@@ -12,7 +12,8 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfiles', {
         'Rd.view.components.ajaxToolbar',
         'Rd.view.multiWanProfiles.vcMultiWanProfiles',
         'Rd.view.multiWanProfiles.winMultiWanProfileInterfaceAdd', 
-        'Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit',     
+        'Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit',   
+         'Rd.view.components.cmbMultiWanProfile'  
     ],
     viewConfig  : {
         loadMask:true
@@ -95,14 +96,14 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfiles', {
             tpl         : tpl,
             itemSelector: 'div.plain-wrap',
             itemId		: 'dvMultiWanProfiles',
-            emptyText   : 'No Multi WAN Profiles Defined Yet'
+            emptyText   : 'No Multi-WAN Profiles Defined Yet'
         });
     
         me.items =  {
             xtype       : 'panel',
             frame       : false,
             height      : '100%', 
-            width       :  550,
+            width       :  600,
             itemId      : 'pnlForMultiWanProfileView',
             layout: {
                type: 'vbox',

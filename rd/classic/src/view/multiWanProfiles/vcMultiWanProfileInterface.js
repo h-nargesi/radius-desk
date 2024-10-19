@@ -5,7 +5,8 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfileInterface', {
     
     },
     config: {
-        urlSave          : '/cake4/rd_cake/multi-wan-profiles/interface-add-edit.json'
+        urlSave : '/cake4/rd_cake/multi-wan-profiles/interface-add-edit.json',
+        urlView : '/cake4/rd_cake/multi-wan-profiles/interface-view.json'       
     },
     control: {
         '#btnEthernet': {
@@ -40,7 +41,48 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfileInterface', {
         },
         '#save': {
             click   : 'btnSave'
+        },
+        'pnlMultiWanProfileInterfaceAddEdit' : {
+            activate : 'pnlActive'
         }        
+    },
+    pnlActive   : function(form){
+        var me              = this; 
+        var interface_id    = me.getView().interface_id;
+
+        if(interface_id == 0){
+            return; //add - no need to load
+        }
+        
+        form.load({
+            url         : me.getUrlView(), 
+            method      : 'GET',
+            params      : { interface_id: interface_id },
+            success     : function(a,b,c){
+            
+                //--Type buttons--           
+                if(b.result.data.type == 'ehternet'){
+            		form.down('#btnEthernet').click();	
+            	} 
+           	    if(b.result.data.type == 'lte'){
+            		form.down('#btnLte').click();	
+            	}
+            	if(b.result.data.type == 'wifi'){
+            		form.down('#btnWifi').click();	
+            	}
+            	
+            	//--Method buttons--
+            	if(b.result.data.method == 'dhcp'){
+            		form.down('#btnDhcp').click();	
+            	} 
+           	    if(b.result.data.method == 'static'){
+            		form.down('#btnStatic').click();	
+            	}
+            	if(b.result.data.method == 'pppoe'){
+            		form.down('#btnPppoe').click();	
+            	}          	                       
+            }
+        });          
     },
     //Type
     onBtnEthernetClick: function(btn){
