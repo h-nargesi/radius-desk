@@ -88,7 +88,7 @@ Ext.define('Rd.controller.cMainOther', {
         pnl.getEl().slideIn('r');     
     },
     itemClicked: function(view, record, item, index, e){
-    
+        var me              = this;
         var clickedColumn   = e.getTarget('.split-dataview-column1') ? 'column1' : 'column2';
         var column          = record.get(clickedColumn);
         if(column){

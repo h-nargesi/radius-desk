@@ -272,9 +272,7 @@ class MultiWanProfilesController extends AppController {
             	if($ap_flag && ($entity->cloud_id == -1)){
             		$this->JsonErrors->errorMessage('Not enough rights for action');
 					return;          	
-            	}
-            	
-                        
+            	}                    
                 $this->{$this->main_model}->patchEntity($entity, $req_d); 
                 if ($this->{$this->main_model}->save($entity)) {
                     $this->set([
@@ -302,10 +300,30 @@ class MultiWanProfilesController extends AppController {
         $entity = $this->{'MwanInterfaces'}->find()->where(['MwanInterfaces.id' => $id])->contain(['MwanInterfaceSettings'])->first();
         if($entity){ 
         
+            $entity->{'method'} = 'dhcp';
+              
             foreach($entity->mwan_interface_settings as $mwanInterfaceSetting){
                 if($mwanInterfaceSetting->grouping == 'wbw_setting'){
                     $entity->{'wbw_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
-                }          
+                }
+                
+                if($mwanInterfaceSetting->grouping == 'qmi_setting'){
+                    $entity->{'qmi_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
+                }
+                
+                if($mwanInterfaceSetting->grouping == 'static_setting'){
+                    $entity->{'method'} = 'static';
+                    $entity->{'static_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
+                }
+                
+                if($mwanInterfaceSetting->grouping == 'pppoe_setting'){
+                    $entity->{'method'} = 'pppoe';
+                    $entity->{'pppoe_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
+                }
+                
+                if($mwanInterfaceSetting->grouping == 'ethernet_setting'){
+                    $entity->{'ethernet_'.$mwanInterfaceSetting->name} = $mwanInterfaceSetting->value;  
+                }              
             }
             unset($entity->mwan_interface_settings);
                 
@@ -338,12 +356,29 @@ class MultiWanProfilesController extends AppController {
         if ($this->request->is('post')) { 
             $req_d  = $this->request->getData();
             
+            $check_items = ['apply_sqm_profile'];
+            foreach($check_items as $i){
+                if(isset($req_d[$i])){
+				    if($req_d[$i] == 'null'){
+					    $req_d[$i] = 0;
+				    }else{
+					    $req_d[$i] = 1;
+				    }  
+			    }else{
+				    $req_d[$i] = 0;
+			    }
+            }
+            
+            
             if($req_d['id'] === "0"){
+            
+                unset($req_d['id']);
             
                 //New MwanInterface 
                 $mwanInterface = $this->MwanInterfaces->newEntity($req_d); 
                 if ($this->MwanInterfaces->save($mwanInterface)) {
-                    $this->_addInterfaceSettings($mwanInterface->id);
+                    $new_id = $mwanInterface->id;
+                    $this->_addInterfaceSettings($new_id);
                     $this->set([
                         'success' => true
                     ]);
@@ -356,8 +391,11 @@ class MultiWanProfilesController extends AppController {
             
                 $mwanInterface = $this->MwanInterfaces->find()->contain([])->where(['MwanInterfaces.id' => $this->request->getData('id')])->first();
                 if($mwanInterface){
-                    $this->MwanInterfaceSettings->deleteAll(['MwanInterfaceSettings.mwan_interface_id' => $mwanInterface->id]);
-                    $this->_addInterfaceSettings($mwanInterface->id);               
+                    $this->{$this->main_model}->patchEntity($mwanInterface, $req_d);
+                    if ($this->MwanInterfaces->save($mwanInterface)) {
+                        $this->MwanInterfaceSettings->deleteAll(['MwanInterfaceSettings.mwan_interface_id' => $mwanInterface->id]);
+                        $this->_addInterfaceSettings($mwanInterface->id);  
+                    }                              
                 }         
             }          
                        
@@ -370,36 +408,68 @@ class MultiWanProfilesController extends AppController {
     
     private function _addInterfaceSettings($mwan_interface_id){
     
-        $cdata = $this->request->getData();
-        
-        if($this->request->getData('type') == 'wifi'){
-            foreach(array_keys($cdata) as $key){
-                if(preg_match('/^wbw_/',$key)){             
-                    $d      = [];
-                    $d['mwan_interface_id'] = $mwan_interface_id;
-                    $d['grouping']  = 'wbw_setting';
-                    $d['name']      = preg_replace('/^wbw_/', '', $key);
-                    $d['value']     = $cdata["$key"];                                  
-                    $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
-                    $this->{'MwanInterfaceSettings'}->save($e);    
-                }
-            } 
+        $cdata = $this->request->getData();    
+
+        foreach(array_keys($cdata) as $key){
+            if(preg_match('/^wbw_/',$key)){             
+                $d      = [];
+                $d['mwan_interface_id'] = $mwan_interface_id;
+                $d['grouping']  = 'wbw_setting';
+                $d['name']      = preg_replace('/^wbw_/', '', $key);
+                $d['value']     = $cdata["$key"];                                  
+                $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                $this->{'MwanInterfaceSettings'}->save($e);    
+            }
+        }   
+
+        foreach(array_keys($cdata) as $key){
+            if(preg_match('/^qmi_/',$key)){             
+                $d      = [];
+                $d['mwan_interface_id'] = $mwan_interface_id;
+                $d['grouping']  = 'qmi_setting';
+                $d['name']      = preg_replace('/^qmi_/', '', $key);
+                $d['value']     = $cdata["$key"];                                  
+                $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                $this->{'MwanInterfaceSettings'}->save($e);    
+            }
+        } 
+     
+        foreach(array_keys($cdata) as $key){
+            if(preg_match('/^pppoe_/',$key)){             
+                $d      = [];
+                $d['mwan_interface_id'] = $mwan_interface_id;
+                $d['grouping']  = 'pppoe_setting';
+                $d['name']      = preg_replace('/^pppoe_/', '', $key);
+                $d['value']     = $cdata["$key"];                                  
+                $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                $this->{'MwanInterfaceSettings'}->save($e);    
+            }
         }
         
-        if($this->request->getData('type') == 'lte'){
-            foreach(array_keys($cdata) as $key){
-                if(preg_match('/^qmi_/',$key)){             
-                    $d      = [];
-                    $d['mwan_interface_id'] = $mwan_interface_id;
-                    $d['grouping']  = 'qmi_setting';
-                    $d['name']      = preg_replace('/^qmi_/', '', $key);
-                    $d['value']     = $cdata["$key"];                                  
-                    $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
-                    $this->{'MwanInterfaceSettings'}->save($e);    
-                }
-            } 
-        }   
-    
+        foreach(array_keys($cdata) as $key){
+            if(preg_match('/^static_/',$key)){             
+                $d      = [];
+                $d['mwan_interface_id'] = $mwan_interface_id;
+                $d['grouping']  = 'static_setting';
+                $d['name']      = preg_replace('/^static_/', '', $key);
+                $d['value']     = $cdata["$key"];                                  
+                $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                $this->{'MwanInterfaceSettings'}->save($e);    
+            }
+        }
+        
+        foreach(array_keys($cdata) as $key){
+            if(preg_match('/^ethernet_/',$key)){             
+                $d      = [];
+                $d['mwan_interface_id'] = $mwan_interface_id;
+                $d['grouping']  = 'ethernet_setting';
+                $d['name']      = preg_replace('/^ethernet_/', '', $key);
+                $d['value']     = $cdata["$key"];                                  
+                $e = $this->{'MwanInterfaceSettings'}->newEntity($d);  
+                $this->{'MwanInterfaceSettings'}->save($e);    
+            }
+        }  
+   
     }
     
     public function interfaceDelete() {

@@ -620,16 +620,9 @@ Ext.define('Rd.view.aps.pnlAccessPointAddEditAp', {
             bodyStyle   : 'background: #e0ebeb',
             items   : [                  
                 {
-                    xtype       : 'textfield',
-                    fieldLabel  : 'Multi-Wan Profile',
-                    name        : 'qmi_username',
-                    itemId      : 'qmi_username',
-                    hidden      : true,
-                    disabled    : true,
-                    allowBlank  : false,
-                    blankText   : i18n("sSupply_a_value"),
-                    labelClsExtra: 'lblRdReq',
-                    width       : w_prim
+                    xtype               : 'cmbMultiWanProfile',
+                    include_all_option  : false,
+                    width               : w_prim
                 }
             ]
         };

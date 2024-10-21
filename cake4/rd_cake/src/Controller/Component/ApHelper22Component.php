@@ -19,7 +19,7 @@ use Cake\I18n\Time;
 
 class ApHelper22Component extends Component {
 
-	protected $components 	= ['Firewall','MdFirewall','AccelPpp', 'Sqm'];
+	protected $components 	= ['Firewall','MdFirewall','AccelPpp', 'Sqm','Connection'];
     protected $main_model   = 'Aps';
     protected $ApId     = '';
 	protected $Hardware = 'creatcomm_ta8h'; //Some default value
@@ -463,7 +463,6 @@ class ApHelper22Component extends Component {
 
     private function _build_network($ap_profile){
 
-        $network 				= [];
         $nat_data				= [];
         $captive_portal_data 	= [];
         $openvpn_bridge_data    = [];
@@ -473,188 +472,18 @@ class ApHelper22Component extends Component {
 		$dummy_start			= 100; //Dummy Interface start for Dynamic VLAN (PPSK)
 		$pppoe_detail           = [];
 		
-
-        //--Jul 2021 --See if there are a WAN bridge to-- 
-        $e_wan_bridge = $this->{'ApConnectionSettings'}->find()->where([
-            'ApConnectionSettings.ap_id'    => $this->ApId,
-            'ApConnectionSettings.name'     => 'wan_bridge',
-        ])->first();
-        
-        $wan_bridge_id = 0; //Default = no bridge / leave as is     
-        if($e_wan_bridge){        
-            $wan_bridge_id = $e_wan_bridge->value;
-        }
-       
-/*		
-        //-> loopback if
-        array_push( $network,
-            [
-                "interface"    => "loopback",
-                "options"   => [
-                    "device"        => "lo",
-                    "proto"         => "static",
-                    "ipaddr"        => "127.0.0.1",
-                    "netmask"       => "255.0.0.0"
-               ]
-            ]);
-
-
-        $br_int     = $this->_wan_for($this->Hardware);
-        $this->br_int = $br_int;
-        $version    = $this->getController()->getRequest()->getQuery('version');
-        //SMALL HACK START 
-		$m = $this->getController()->getRequest()->getQuery('mac');
-        $m = strtolower($m);
-        $m = str_replace('-', ':', $m);
-        //SMALL HACK END
-        
-        //Default
-        $wan_if = 'wan0'; //Just bogus value
-        if($wan_bridge_id == 0){ //No bridging
-            $wan_if = $br_int;
-        }
-        
-        $wan_options = [
-            "proto"     => "dhcp"
-        ];
-               
-        $e_s = $this->{'ApConnectionSettings'}->find()->where([
-            'ApConnectionSettings.ap_id'    => $this->ApId,
-            'ApConnectionSettings.grouping' => 'wan_static_setting',
-        ])->all();
-        if(count($e_s)>0){
-            $wan_options['proto'] = 'static';
-            $dns = '';
-            foreach($e_s as $acs){
-                if($acs->name == 'dns_1'){
-                    if($acs->value !== ''){
-                        $dns = $acs->value;
-                    }
-                }
-                if($acs->name == 'dns_2'){
-                    if($acs->value !== ''){
-                        $dns = $dns.' '.$acs->value;
-                    }
-                }
-                if(($acs->name !== 'dns_1')&&($acs->name !== 'dns_2')){      
-                    if($acs->value !== ''){     
-                        $wan_options[$acs->name] = $acs->value;
-                    }
-                }              
-            }
-            if($dns !== ''){
-                $wan_options['dns'] = $dns;    
-            }
-        }
-        
-        $e_p = $this->{'ApConnectionSettings'}->find()->where([
-            'ApConnectionSettings.ap_id'    => $this->ApId,
-            'ApConnectionSettings.grouping' => 'wan_pppoe_setting',
-        ])->all();
-        if(count($e_p)>0){
-            $wan_options['proto'] = 'pppoe';
-            $dns = '';
-            foreach($e_p as $acp){
-                if($acp->name == 'dns_1'){
-                    if($acp->value !== ''){
-                        $dns = $acp->value;
-                    }
-                }
-                if($acp->name == 'dns_2'){
-                    if($acp->value !== ''){
-                        $dns = $dns.' '.$acp->value;
-                    }
-                }
-                if(($acp->name !== 'dns_1')&&($acp->name !== 'dns_2')){
-                    if($acp->value !== ''){     
-                        $wan_options[$acp->name] = $acp->value;
-                    }
-                }              
-            }
-            if($dns !== ''){
-                $wan_options['dns'] = $dns;    
-            }         
-        }
-        
-        $e_vlan = $this->{'ApConnectionSettings'}->find()->where([
-            'ApConnectionSettings.ap_id'    => $this->ApId,
-            'ApConnectionSettings.grouping' => 'vlan_setting',
-            'ApConnectionSettings.name' 	=> 'vlan_admin',
-        ])->first();
-        
-        if($e_vlan){
-        	$wan_if = $wan_if.'.'.$e_vlan->value;
-        }
-        
-      	array_push( $network,
-            [
-                "device" => "br-lan",
-                "options"   => [
-                	'name'	=> 'br-lan',
-                	'type'	=> 'bridge'
-                ],
-                'lists'	=> ['ports' => [
-                	$wan_if
-                ]
-        	]
-        ]);
-        
-        $wan_options['device'] = 'br-lan';
-        
-        
-        //---26Jan24 VLAN Hack---
-        // --Sample--
-        // config interface 'lan'
-        //     option device 'br-lan'
-        //     option proto 'dhcp'
-        //     option ifname 'eth0 eth1'
-        //      option stp '1'
-        
-        if($this->vlan_hack){       
-            $wan_options['ifname'] = 'eth0 eth1'; 
-            $wan_options['stp']    =  '1';
-        }
-        //---
-                      
-        array_push( $network,
-            [
-                "interface" => "lan",
-                "options"   => $wan_options
-       	]); 	
-
-	*/	
-	
-	   $network =  $this->_getMwanNetwork(); 
-	
-		//LTE/4G - !!HEADSUP Place it here since some code expect the LAN IF to be on $network[1]['options']['ifname'];!!
-        $e_qmi = $this->{'ApConnectionSettings'}->find()->where([
-            'ApConnectionSettings.ap_id'    => $this->ApId,
-            'ApConnectionSettings.grouping' => 'qmi_setting',
-        ])->all();
-        if(count($e_qmi)>0){
-            $this->QmiActive            = true;
-            $wwan_options               = [];
-            $wwan_options['proto']      = 'qmi';
-            $wwan_options['device']     = '/dev/cdc-wdm0';
-            $wwan_options['disabled']   = '0';
-            $wwan_options['ifname']     = 'wwan';
-            foreach($e_qmi as $acp){              
-                if($acp->value !== ''){     
-                    $wwan_options[$acp->name] = $acp->value;
-                }        
-            }            
-            array_push( $network,
-	            [
-	                "interface" => "wwan",
-	                "options"   => $wwan_options
-	       	]);                  
-        }
+		$network                = $this->Connection->getConnectionInfo($this->ApId,$this->Hardware);
+		$this->br_int           = $this->Connection->br_int;
+		$this->QmiActive        = $this->Connection->QmiActive;
+		$wan_bridge_id          = $this->Connection->wanBridgeId;
+		
+	   //$network =  $this->_getMwanNetwork(); 	
 
         //Now we will loop all the defined exits **that has entries assigned** to them and add them as bridges as we loop.
         //The members of these bridges will be determined by which entries are assigned to them and specified
         //in the wireless configuration file
 
-        $start_number = 0;
+        $start_number   = 0;
         $ifCounter      = 0;
         $loopCounter    = 0;      
 
@@ -742,7 +571,7 @@ class ApHelper22Component extends Component {
 
                 if($type == 'tagged_bridge'){
                 
-                	$interfaces =  [ $br_int.'.'.$vlan ]; //only one
+                	$interfaces =  [ $this->br_int.'.'.$vlan ]; //only one
                 	                
                 	array_push($network,
 	                    [

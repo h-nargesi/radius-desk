@@ -590,9 +590,11 @@ Ext.define('Rd.view.meshes.pnlMeshAddEditNode', {
             hidden  : true,
             disabled: true,
             bodyStyle   : 'background: #e0ebeb',
-            items   : [               
-                { 
-                    xtype       : 'cmbMultiWanProfile'
+            items   : [                  
+                {
+                    xtype               : 'cmbMultiWanProfile',
+                    include_all_option  : false,
+                    width               : w_prim
                 }
             ]
         };
@@ -709,6 +711,7 @@ Ext.define('Rd.view.meshes.pnlMeshAddEditNode', {
 	            pnlWifiStatic,
 	            pnlWifiPppoe,
 	            pnlQmi,
+	            pnlMwan,
 	            {
                     xtype       : 'numberfield',
                     name        : 'vlan_admin',

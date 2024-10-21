@@ -38,6 +38,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
         'Ext.form.field.Text',
         'Rd.view.multiWanProfiles.vcMultiWanProfileInterface',
         'Rd.view.components.cmbSqmProfile',
+        'Rd.view.components.cmbQmiDevice'
     ],
     controller  : 'vcMultiWanProfileInterface',
     initComponent: function() {
@@ -180,7 +181,10 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
             defaults    : {
                 anchor  : '100%'
             },
-            items   : [               
+            items   : [ 
+                {
+                    xtype       : 'cmbQmiDevice'
+                },              
                 { 
                     xtype       : 'cmbQmiAuth',
                     allowBlank  : false,
@@ -188,7 +192,8 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                     listeners       : {
 						    change : 'onCmbQmiOptionsChange'
 				    }  
-                },       
+                },
+                       
                 {
                     xtype       : 'textfield',
                     fieldLabel  : 'Username',
@@ -254,7 +259,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                     name        : 'wbw_encryption',
                     width       : w_prim,
                     listeners       : {
-						   // change : 'onCmbEncryptionOptionsChangeWbw'
+						    change : 'onCmbEncryptionOptionsChangeWbw'
 				    }  
                 },
                 {
@@ -456,7 +461,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                 pnPppoe,
                 {
                     xtype       : 'numberfield',
-                    name        : 'vlan',
+                    name        : 'ethernet_vlan',
                     itemId      : 'nrVlan',
                     fieldLabel  : 'VLAN',
                     allowBlank  : true,
@@ -471,7 +476,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                     xtype       : 'textfield',
                     itemId      : 'txtHardwarePort',
                     fieldLabel  : 'Hardware Port',
-                    name        : 'hardware_port',
+                    name        : 'ethernet_port',
                     allowBlank  : false,
                     labelClsExtra: 'lblRdReq'
                 },                        
@@ -499,19 +504,12 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
             xtype       : 'container',
             width       : w_prim,
             layout      : 'anchor',
+            itemId      : 'cntMonitor',
+            disabled    : true,
             defaults    : {
                 anchor  : '100%'
             },
-          /*  items       : [
-                {
-                    xtype       : 'checkbox',      
-                    boxLabel  	: 'Enable Monitor',
-                    boxLabelCls	: 'boxLabelRd',
-                    name        : 'enable_monitor',
-                    listeners   : {
-			          //  change  : 'onChkApplySqmProfileChange'
-			        }
-                },
+            items       : [
                 pnlPingHosts,
                 { xtype : 'button', text: 'ADD HOST / IP ADDRESS', 	itemId: 'btnAddHost',  flex:1, ui : 'default-toolbar', 'margin' : '0' },
                 {
@@ -540,7 +538,7 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                     keyNavEnabled  : false,
                     mouseWheelEnabled	: false
                 }           
-            ]*/
+            ]
         }            
        
         me.items = [
@@ -581,7 +579,18 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
                   pack      : 'start'
                 },
                 bodyPadding : 10,
-                items       : cntMonitor				
+                items       : [
+                    {
+                        xtype       : 'checkbox',      
+                        boxLabel  	: 'Enable Monitor',
+                        boxLabelCls	: 'boxLabelRd',
+                        name        : 'enable_monitor',
+                        listeners   : {
+			                change  : 'onChkEnableMonitorChange'
+			            }
+                    },
+                    cntMonitor
+                ]				
             }
         ];      
                

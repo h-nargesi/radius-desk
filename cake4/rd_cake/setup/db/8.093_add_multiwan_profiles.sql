@@ -55,7 +55,7 @@ if not exists (select * from information_schema.columns where column_name = 'mul
 	alter table aps add column multi_wan_profile_id int(11) DEFAULT NULL;
 end if;
 
-if not exists (select * from information_schema.columns where column_name = 'multi_wan_profile_id' and table_name = 'aps' and table_schema = 'rd') then
+if not exists (select * from information_schema.columns where column_name = 'multi_wan_profile_id' and table_name = 'nodes' and table_schema = 'rd') then
 	alter table nodes add column multi_wan_profile_id int(11) DEFAULT NULL;
 end if;
 

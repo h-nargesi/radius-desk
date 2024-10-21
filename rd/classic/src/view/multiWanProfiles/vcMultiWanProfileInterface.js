@@ -84,6 +84,50 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfileInterface', {
             }
         });          
     },
+    onCmbQmiOptionsChange: function(cmb){
+        var me      = this;
+        var form    = cmb.up('form');
+        if(cmb.getValue() == 'none'){
+            form.down('#qmi_username').setVisible(false);
+            form.down('#qmi_username').setDisabled(true); 
+            form.down('#qmi_password').setVisible(false);
+            form.down('#qmi_password').setDisabled(true);  
+        }else{
+            form.down('#qmi_username').setVisible(true);
+            form.down('#qmi_username').setDisabled(false);  
+            form.down('#qmi_password').setVisible(true);
+            form.down('#qmi_password').setDisabled(false);
+        }
+    },
+    onCmbEncryptionOptionsChangeWbw : function(cmb){
+        var me      = this;
+        var form    = cmb.up('form');
+        if(cmb.getValue() == 'none'){
+            form.down('#wbw_key').setVisible(false);
+            form.down('#wbw_key').setDisabled(true);  
+        }else{
+            form.down('#wbw_key').setVisible(true);
+            form.down('#wbw_key').setDisabled(false);  
+        }
+    },
+    onChkApplySqmProfileChange: function(chk){
+		var me 		    = this;
+		var form        = chk.up('form');
+		var sqm_prof    = form.down('cmbSqmProfile');
+		if(chk.getValue()){
+		    sqm_prof.enable();		   
+		}else{
+		    sqm_prof.disable();
+		}
+	},
+	onChkEnableMonitorChange: function(chk){
+	    var me = this;
+	    if(chk.getValue()){
+		    me.getView().down('#cntMonitor').enable();		   
+		}else{
+		    me.getView().down('#cntMonitor').disable();
+		}	
+	},     
     //Type
     onBtnEthernetClick: function(btn){
     	var me = this;
@@ -103,6 +147,8 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfileInterface', {
     },
     onBtnLteClick: function(btn){
     	var me = this;
+    	me.getView().down('#btnDhcp').click();
+
     	me.getView().down('#txtType').setValue('lte');
     	me.getView().down('#pnlQmi').show();
     	me.getView().down('#pnlQmi').enable();
@@ -115,7 +161,6 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfileInterface', {
     	me.getView().down('#txtHardwarePort').hide();
     	me.getView().down('#rgrpMethod').disable();
     	me.getView().down('#rgrpMethod').hide();
-
     },
     onBtnWifiClick: function(btn){
     	var me = this;
