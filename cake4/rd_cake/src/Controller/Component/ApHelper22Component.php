@@ -27,6 +27,7 @@ class ApHelper22Component extends Component {
     protected $RadioSettings = [];
     protected $WbwActive    = false;
     protected $QmiActive    = false;
+    protected $MwanActive   = false;
     protected $WbwChannel   = 0;
     
     protected $Schedules    = false;
@@ -158,9 +159,9 @@ class ApHelper22Component extends Component {
             	} 
             	$json['config_settings']['ppsk_files'] = $this->private_psks;
             	
-            	//==WIP FOR MWAN==
-            	$json['config_settings']['mwan'] = [];
-            	$json['config_settings']['mwan']['mwan_network'] = $this->_getMwanNetwork();                            
+            	if($this->MwanActive){
+            	    $json['config_settings']['mwan'] = $this->Connection->getMwanSettings();
+            	}                    
                 return $json;
             }
     }
@@ -475,10 +476,9 @@ class ApHelper22Component extends Component {
 		$network                = $this->Connection->getConnectionInfo($this->ApId,$this->Hardware);
 		$this->br_int           = $this->Connection->br_int;
 		$this->QmiActive        = $this->Connection->QmiActive;
+		$this->MwanActive       = $this->Connection->MwanActive;
 		$wan_bridge_id          = $this->Connection->wanBridgeId;
 		
-	   //$network =  $this->_getMwanNetwork(); 	
-
         //Now we will loop all the defined exits **that has entries assigned** to them and add them as bridges as we loop.
         //The members of these bridges will be determined by which entries are assigned to them and specified
         //in the wireless configuration file
@@ -1884,76 +1884,4 @@ class ApHelper22Component extends Component {
 	    return $base_array;	
 	}
 	
-	private function _getMwanNetwork(){
-	
-	    $mwanNetwork = [
-        	    [
-        	        "interface" => "loopback", 
-        	        "options"   => 
-        	            [
-        	                "device"    => "lo", 
-        	                "proto"     => "static", 
-        	                "ipaddr"    => "127.0.0.1",
-        	                "netmask"   => "255.0.0.0"
-        	            ]
-        	    ], 
-        	    [
-        	        "device"    => "br-mwan20",
-        	        "options"   => [
-        	            "name"      => "br-mwan20",
-        	            "type"      => "bridge"
-        	        ], 
-        	        "lists"     => [
-        	            "ports" => [
-        	                "wan"
-        	            ]
-        	        ]
-        	    ], 
-        	    [
-        	        "interface" => "mwan20",
-        	        "options"   => [
-        	            "proto"     => "dhcp",
-        	            "device"    => "br-mwan20",
-        	            "metric"    => 1
-        	        ]
-        	    ],
-        	    [
-        	        "device"    => "br-mwan21",
-        	        "options"   => [
-        	            "name"      => "br-mwan21",
-        	            "type"      => "bridge"
-        	        ], 
-        	        "lists"     => [
-        	            "ports" => [
-        	                "lan"
-        	            ]
-        	        ]
-        	    ], 
-        	    [
-        	        "interface" => "mwan21",
-        	        "options"   => [
-        	            "proto"     => "dhcp",
-        	            "device"    => "br-mwan21",
-        	            "metric"    => 2
-        	        ]
-        	    ],
-        	    [
-        	        "interface" => "mwan23",
-        	        "options"   => [
-        	            "proto"     => "qmi",
-                        "device"    => "/dev/cdc-wdm0",
-                        "disabled"  => "0",
-                        "ifname"    => "mwan23",
-                        "auth"      => "none",
-                        "apn"       => "internet",
-                        "wan_bridge"=> "0",
-        	            "metric"    => 3
-        	        ]
-        	    ] 
-        	             	    
-            ];        
-	
-	    return $mwanNetwork;
-	}
-
 }
