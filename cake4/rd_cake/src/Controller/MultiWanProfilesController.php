@@ -121,6 +121,7 @@ class MultiWanProfilesController extends AppController {
 			$row['name']	= $i->name;
 			$row['type']    = 'multi_wan_profile';
 			$row['multi_wan_profile_id'] = $i->id;
+			$row['multi_wan_profile_name'] = $i->name;
 			
 			$for_system = false;
             if($i->cloud_id == -1){
@@ -134,6 +135,7 @@ class MultiWanProfilesController extends AppController {
 			foreach($i->mwan_interfaces as $mwanInterface){
 			    $mwanInterface->con_type = $mwanInterface->type;
 			    $mwanInterface->type = 'mwan_interface';
+			    $mwanInterface->multi_wan_profile_name = $i->name;
 			    $items[] = $mwanInterface;		
 			}
 			
@@ -373,6 +375,16 @@ class MultiWanProfilesController extends AppController {
             if($req_d['id'] === "0"){
             
                 unset($req_d['id']);
+                
+                $metric = 1;
+                //-- Get the highest metric and add one to it for this
+                $ifMetric = $this->MwanInterfaces->find()
+                    ->where(['MwanInterfaces.multi_wan_profile_id' => $req_d['multi_wan_profile_id']])
+                    ->order(['MwanInterfaces.metric DESC'])
+                    ->first();
+                if($ifMetric){
+                    $req_d['metric'] =   $ifMetric->metric + 1;
+                }                             
             
                 //New MwanInterface 
                 $mwanInterface = $this->MwanInterfaces->newEntity($req_d); 
@@ -510,6 +522,184 @@ class MultiWanProfilesController extends AppController {
             ]);
             $this->viewBuilder()->setOption('serialize', true);
         }
+	}
+	
+	public function policyView(){
+	
+	    $user = $this->Aa->user_for_token($this);
+        if(!$user){   //If not a valid user
+            return;
+        }
+        
+        $req_q  = $this->request->getQuery();
+        
+        $mwanInterfaces = [];
+        
+        if(isset($req_q['id'])){                 
+            $mwanInterfaces = $this->MwanInterfaces->find()->where(['MwanInterfaces.multi_wan_profile_id' => $req_q['id']])->all();
+        }
+        
+        $mode   = 'load_balance';
+        foreach($mwanInterfaces as $mwanInterface){
+            if(($mwanInterface->policy_role =='standby')&&($mwanInterface->policy_active)){
+                $mode = 'fail_over';
+                break;
+            }
+        }
+        
+        $last_resort = 'unreachable';
+        
+        $multiWanProfile = $this->MultiWanProfiles->find()->where(['MultiWanProfiles.id' => $req_q['id']])->first();
+        if($multiWanProfile){
+            $last_resort = $multiWanProfile->last_resort;
+        }
+        
+                         
+         $this->set([
+            'data'         => [
+                'mode'          => $mode,
+                'interfaces'    => $mwanInterfaces,
+                'last_resort'   => $last_resort            
+            ],
+            'success'      => true
+        ]);
+        $this->viewBuilder()->setOption('serialize', true);
+	
+	}
+	
+	 public function policyEdit(){
+	   
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+
+        //__ Authentication + Authorization __
+        $user = $this->_ap_right_check();
+        if(!$user){
+            return;
+        }
+        
+        $ap_flag 	= true;	
+		if($user['group_name'] == Configure::read('group.admin')){
+			$ap_flag = false; //clear if admin
+		}
+		
+		$multi_wan_profile_id = false;
+		
+		// Define a pattern to match keys that start with 'if_' followed by a number and then an underscore and some text
+        $pattern        = '/^if_(\d+)_(\w+)/';
+        $filteredArray  = [];		
+		$requestData    = $this->request->getData();
+		
+		foreach ($requestData as $key => $value) {
+            // Check if the key matches the pattern
+            if (preg_match($pattern, $key, $matches)) {
+                // $matches[1] will contain the number and $matches[2] will contain the "something" part
+                $filteredArray[$matches[1]][$matches[2]] = $value;
+            }
+        }
+        
+        
+        foreach ($filteredArray as $key => $value) {      
+            if(isset($filteredArray[$key]['policy_active'])){
+                $filteredArray[$key]['policy_active'] = 1;   
+            }else{
+                $filteredArray[$key]['policy_active'] = 0;
+            }        
+        }
+        
+        //One active check
+        $activeCount = 0;
+        $foActive    = 0;
+        $foStandby   = 0;
+        foreach ($filteredArray as $key => $value) { 
+            if($filteredArray[$key]['policy_active'] == 1){
+                $activeCount++;
+            }
+            if($filteredArray[$key]['policy_role'] == 'active'){
+                $foActive++;
+            }else{
+                $foStandby++; 
+            }    
+        }
+        
+        if($activeCount == 0){        
+            $message = __('At least ONE interface needs to be selected');
+            $this->set([
+                'message'   => $message,
+                'success'   => false
+            ]);
+            $this->viewBuilder()->setOption('serialize', true);
+            return;
+        }
+        
+        if($requestData['mode'] == 'load_balance'){
+            foreach ($filteredArray as $key => $value) { 
+                $ifData         = $value;
+                $ifData['id']   = $key;
+                $ifData['policy_role'] = 'active'; //reset it to active
+                $mwanInterface = $this->MwanInterfaces->find()->where(['MwanInterfaces.id' => $key])->first();
+                if($mwanInterface){
+                    $multi_wan_profile_id = $mwanInterface->multi_wan_profile_id;
+                    $this->MwanInterfaces->patchEntity($mwanInterface, $ifData); 
+                    $this->MwanInterfaces->save($mwanInterface);
+                }   
+            }       
+        }
+        
+        if($requestData['mode'] == 'fail_over'){
+            $found_error = false;
+                      
+            if($foActive == 0){
+                $found_error = true;           
+                $message = __('At least ONE interface needs to be set to Active');               
+            }
+            
+            if($foStandby == 0){
+                $found_error = true;           
+                $message = __('At least ONE interface needs to be set to Standby');               
+            }
+            
+            if($activeCount < 2){ 
+                $found_error = true;           
+                $message = __('At least TWO interface needs to be selected');                                 
+            }
+            
+            if($found_error){           
+                $this->set([
+                    'message'   => $message,
+                    'success'   => false
+                ]);
+                $this->viewBuilder()->setOption('serialize', true);
+                return;
+            }else{
+                foreach ($filteredArray as $key => $value) { 
+                    $ifData         = $value;
+                    $ifData['id']   = $key;
+                    $mwanInterface  = $this->MwanInterfaces->find()->where(['MwanInterfaces.id' => $key])->first();
+                    if($mwanInterface){
+                        $multi_wan_profile_id = $mwanInterface->multi_wan_profile_id;
+                        $this->MwanInterfaces->patchEntity($mwanInterface, $ifData); 
+                        $this->MwanInterfaces->save($mwanInterface);
+                    }
+                }
+                $saved = true;           
+            }            
+        }
+                
+        if($multi_wan_profile_id){
+            $multiWanProfile = $this->MultiWanProfiles->find()->where(['MultiWanProfiles.id' => $multi_wan_profile_id])->first();
+            if($multiWanProfile){
+                $multiWanProfile->last_resort = $requestData['last_resort'];
+                $this->MultiWanProfiles->save($multiWanProfile); 
+            }    
+        }
+                           	
+		$this->set([  
+            'success'   => true
+        ]);
+        $this->viewBuilder()->setOption('serialize', true);
+	
 	}
           	    	
     public function menuForGrid(){

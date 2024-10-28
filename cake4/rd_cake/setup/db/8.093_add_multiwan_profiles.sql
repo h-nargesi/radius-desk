@@ -10,6 +10,7 @@ if not exists (select * from information_schema.columns
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` char(64) NOT NULL,
         `cloud_id` int(11) DEFAULT NULL,
+        `last_resort` enum('unreachable','blackhole','default') DEFAULT 'unreachable',
         `created` datetime NOT NULL,
         `modified` datetime NOT NULL,
       PRIMARY KEY (`id`)
@@ -27,6 +28,9 @@ if not exists (select * from information_schema.columns
         `apply_sqm_profile` tinyint(1) NOT NULL DEFAULT 0,
         `sqm_profile_id` int(11) NOT NULL DEFAULT '0',
         `metric` int(11) NOT NULL DEFAULT '1',
+        `policy_active` tinyint(1) NOT NULL DEFAULT 0,
+        `policy_ratio` int(4) NOT NULL DEFAULT 1,
+        `policy_role` enum('active','standby') DEFAULT 'active',
         `created` datetime NOT NULL,
         `modified` datetime NOT NULL,
       PRIMARY KEY (`id`)

@@ -161,6 +161,9 @@ class ApHelper22Component extends Component {
             	
             	if($this->MwanActive){
             	    $json['config_settings']['mwan'] = $this->Connection->getMwanSettings();
+            	    if(isset($json['config_settings']['gateways'])){
+            	        $json['config_settings']['mwan']['firewall']['forwarding'] = $json['config_settings']['gateways'];
+            	    }
             	}                    
                 return $json;
             }
@@ -1655,7 +1658,15 @@ class ApHelper22Component extends Component {
                     $start_number++;
                 }
             }                   
-        }                  	
+        }  
+        
+        if($this->Connection->MwanActive){
+            $mwSettings = $this->Connection->getMwanSettings();
+            if(isset($mwSettings['wireless'])){
+                $wireless = array_merge($wireless,$mwSettings['wireless']);
+            }    
+        }
+                                	
         return $wireless;  
     }
       

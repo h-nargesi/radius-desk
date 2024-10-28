@@ -29,6 +29,9 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
         'pnlMultiWanProfiles #edit': {
             click: 'edit'
         },
+        'pnlMultiWanProfiles #mwan_policies': {
+            click: 'policy'
+        },
         'pnlMultiWanProfiles cmbMultiWanProfile': {
            change   : 'cmbMultiWanProfileChange'
         },
@@ -200,6 +203,42 @@ Ext.define('Rd.view.multiWanProfiles.vcMultiWanProfiles', {
 	      	}	  			  		  	  
         }     
     },
+    policy: function(button) {
+        var me      = this;
+        //Find out if there was something selected
+        if(me.getView().down('#dvMultiWanProfiles').getSelectionModel().getCount() == 0){
+             Ext.ux.Toaster.msg(
+                        i18n('sSelect_an_item'),
+                        i18n('sFirst_select_an_item_to_edit'),
+                        Ext.ux.Constants.clsWarn,
+                        Ext.ux.Constants.msgWarn
+            );
+        }else{
+		    var sr   =  me.getView().down('#dvMultiWanProfiles').getSelectionModel().getLastSelected();
+		    if(!me.rightsCheck(sr)){
+	    		return;
+	    	}
+
+            var tp      = me.getView().up('tabpanel');
+        	var id		= 'tabMwanPolicyEdit'+ sr.getId();        	
+        	var newTab  = tp.items.findBy(
+            function (tab){
+                return tab.getItemId() === id;
+            });
+         
+            if (!newTab){
+                newTab = tp.add({
+                    itemId                  : id,
+                    multi_wan_profile_id    : sr.get('multi_wan_profile_id'),
+                    multi_wan_profile_name  : sr.get('multi_wan_profile_name'),
+                    xtype                   : 'pnlMwanPolicyEdit'            
+                });
+            }    
+            tp.setActiveTab(newTab); 			  		  	  
+        }     
+    },
+    
+    
     btnEditSave:function(button){
         var me      = this;
         var win     = button.up('window');

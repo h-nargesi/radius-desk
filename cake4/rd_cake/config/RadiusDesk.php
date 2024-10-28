@@ -203,6 +203,9 @@ $config['icnTrophy']    = 'xf091@'.$config['webFont'];
 $config['icnCog']       = 'xf013@'.$config['webFont'];
 $config['icnLink']      = 'xf0c1@'.$config['webFont'];
 $config['icnFire']      = 'xf06d@'.$config['webFont'];
+$config['icnToggleOn']  = 'xf205@'.$config['webFont'];
+
+$config['icnBalanceScale']  = 'xf24e@'.$config['webFont'];
 
 
 //=== Dynamic RADIUS Clients 23/1/17 ===

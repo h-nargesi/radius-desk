@@ -200,5 +200,9 @@ Rd.config = {
     'icnUpoad'      : 'xf093@FontAwesome',
     'icnSitemap'    : 'xf0e8@FontAwesome',
     'icnPlug'       : 'xf1e6@FontAwesome',
+    'icnToggleOn'   : 'xf205@FontAwesome',
+    'icnScale'      : 'xf24e@FontAwesome',
+    'icnPauseO'     : 'xf28c@FontAwesome',
+    'icnPlayO'      : 'xf01d@FontAwesome'
 }
 

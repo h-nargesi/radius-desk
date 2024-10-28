@@ -2,7 +2,6 @@ Ext.define('Rd.view.multiWanProfiles.pnlMultiWanProfileInterfaceAddEdit', {
     extend      : 'Ext.form.Panel',
     alias       : 'widget.pnlMultiWanProfileInterfaceAddEdit',
     closable    : true,
-    realm_id    : null,
     autoScroll	: true,
     plain       : true,
     frame       : false,

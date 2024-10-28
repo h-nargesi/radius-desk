@@ -135,10 +135,13 @@ class ConnectionComponent extends Component {
                 ->all();
             if (!$mwanInterfaces->isEmpty()) {
                 $config = [];
+                $this->_buildMwanConfig($mwanInterfaces);
             }
             foreach($mwanInterfaces as $mwanInterface){
                 $if_id  = $mwanInterface->id;
                 $metric = $mwanInterface->metric;
+                
+                $this->MwanSettings['firewall']['masq_zones'][] = "mw$if_id";
                 
                 //-- ETHERNET and WIFI --
                 if($mwanInterface->type == 'ethernet'){
@@ -151,8 +154,7 @@ class ConnectionComponent extends Component {
 	                    'device'    => "br-mw$if_id",
 	                    'metric'    => $metric
             	    ];
-                    
-                    
+                                        
                     foreach($mwanInterface->mwan_interface_settings as $mwanInterfaceSetting){
                         //--Port--
                         if(($mwanInterfaceSetting->grouping == 'ethernet_setting')&&
@@ -240,17 +242,25 @@ class ConnectionComponent extends Component {
                 }
                 
                 //-- WIFI --
-                if($mwanInterface->type == 'wifi'){                
+                if($mwanInterface->type == 'wifi'){ 
+                
+                    if(!isset($this->MwanSettings['wireless'])){
+                        $this->MwanSettings['wireless'] = [];
+                    }
+                               
                     $dns        = [];
                     $wireless   = [];
                     $if_name    = "mw$if_id";
                     
-                    $this->MwanSettings['wireless'][$if_name]['ifname'] = $if_name;
-                    $this->MwanSettings['wireless'][$if_name]['mode']   = 'sta';
+                    $wireless['wifi-iface'] = $if_name;
+                    $wireless['options']    = [];
+                    
+                    $wireless['options']['ifname'] = $if_name;
+                    $wireless['options']['mode']   = 'sta';
+                    $wireless['options']['network']= $if_name;
                     
                     $ifOptions  = [
             	        'proto'     => 'dhcp',
-	                    'device'    => "br-mw$if_id",
 	                    'metric'    => $metric
             	    ];
                                      
@@ -276,26 +286,20 @@ class ConnectionComponent extends Component {
                         }
                         
                         if($mwanInterfaceSetting->grouping == 'wbw_setting'){
-                            $this->MwanSettings['wireless'][$if_name][$mwanInterfaceSetting->name] = $mwanInterfaceSetting->value;
+                            $wireless['options'][$mwanInterfaceSetting->name] = $mwanInterfaceSetting->value;
                         }                        
                     }
                                                                 
                     if (!empty($dns)) {
                         $ifOptions['dns'] = implode(' ', $dns);
                     }
-                        
-                    array_push($config,[
-            	        'device'    => "br-mw$if_id",
-            	        'options'   => [
-            	            'name'      => "br-mw$if_id",
-            	            'type'      => 'bridge'
-            	        ]
-            	    ]);
-            	    
+                                  	    
             	    array_push($config,[
             	        'interface' => $if_name,
             	        'options'   => $ifOptions
             	    ]);
+            	    
+            	    array_push($this->MwanSettings['wireless'],$wireless);
                 	                                                       
                 }
                                          
@@ -423,5 +427,56 @@ class ConnectionComponent extends Component {
         }
 	
 	    return $wwanOptions;
+	}
+	
+	private function _buildMwanConfig($mwanInterfaces){
+		
+	    $config = [];	    
+	    array_push($config, [
+	        'globals'   => 'globals',
+	        'options'   => [
+	             'mmx_mask' => '0x3F00'       
+	        ]	    
+	    ]);
+	    
+	    foreach($mwanInterfaces as $mwanInterface){
+            $if_id  = $mwanInterface->id;
+                
+            //Interfaces
+            array_push($config, [
+                'interface'   => "mw$if_id",
+                'options'   => [
+                    'enabled'       => 1,
+                    'family'        => 'ipv4',
+                    'reliability'   => '2'      
+                ],
+                'lists'     => [
+                    'track_ip' => [
+                        '1.0.0.1',
+                        '1.1.1.1',
+                        '208.67.222.222',
+                         '208.67.220.220'
+                    ]
+                ]	    
+            ]);
+
+            if($mwanInterface->policy_active){
+                $policy_metric = 1;
+                if($mwanInterface->policy_role == 'standby'){
+                    $policy_metric = 2;   
+                }
+                $member_name = "mw$if_id"."_m".$policy_metric."_w".$mwanInterface->policy_ratio;
+                array_push($config, [
+                    'member' => $member_name,
+                    'options'   => [
+                        'metric' => $policy_metric,
+                        'weight' => $mwanInterface->policy_ratio
+                    ]
+                ]);            	            
+            }
+	            	             
+        }
+	    $this->MwanSettings['mwan3'] = $config;
+	    
 	}
 }
