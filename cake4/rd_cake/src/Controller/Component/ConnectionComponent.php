@@ -439,6 +439,9 @@ class ConnectionComponent extends Component {
 	        ]	    
 	    ]);
 	    
+	    $policy_members = [];
+	    $policy_name    = 'rd_load_balance';
+	    
 	    foreach($mwanInterfaces as $mwanInterface){
             $if_id  = $mwanInterface->id;
                 
@@ -463,7 +466,9 @@ class ConnectionComponent extends Component {
             if($mwanInterface->policy_active){
                 $policy_metric = 1;
                 if($mwanInterface->policy_role == 'standby'){
-                    $policy_metric = 2;   
+                    $policy_metric = 2;
+                    $policy_name = 'rd_fail_over';
+                       
                 }
                 $member_name = "mw$if_id"."_m".$policy_metric."_w".$mwanInterface->policy_ratio;
                 array_push($config, [
@@ -472,10 +477,39 @@ class ConnectionComponent extends Component {
                         'metric' => $policy_metric,
                         'weight' => $mwanInterface->policy_ratio
                     ]
-                ]);            	            
-            }
-	            	             
+                ]);
+                $policy_members[] = $member_name;            	            
+            }	            	             
         }
+        if(count($policy_members) > 0){
+            array_push($config, [
+                'policy'=> $policy_name,
+                'lists' => [
+                    'use_member'    => $policy_members                
+                ]            
+            ]);
+            
+            //--Standard Rules
+            array_push($config, [
+                'rule'=> 'https',
+                'options'   => [
+                    'sticky'    => '1',
+                    'dest_port' => 433,
+                    'proto'     => 'tcp',
+                    'use_policy'=> $policy_name
+                ]         
+            ]);
+            
+            array_push($config, [
+                'rule'=> 'default_rule_v4',
+                'options'   => [
+                    'dest_ip'   => '0.0.0.0/0',
+                    'family'    => 'ipv4',
+                    'use_policy'=> $policy_name
+                ]         
+            ]);
+                 
+        }      
 	    $this->MwanSettings['mwan3'] = $config;
 	    
 	}
