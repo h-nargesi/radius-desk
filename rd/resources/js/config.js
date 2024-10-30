@@ -203,6 +203,7 @@ Rd.config = {
     'icnToggleOn'   : 'xf205@FontAwesome',
     'icnScale'      : 'xf24e@FontAwesome',
     'icnPauseO'     : 'xf28c@FontAwesome',
-    'icnPlayO'      : 'xf01d@FontAwesome'
+    'icnPlayO'      : 'xf01d@FontAwesome',
+    'icnSliders'    : 'xf1de@FontAwesome',
 }
 

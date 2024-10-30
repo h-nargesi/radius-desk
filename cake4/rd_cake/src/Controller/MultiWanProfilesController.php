@@ -88,7 +88,7 @@ class MultiWanProfilesController extends AppController {
         $req_q    = $this->request->getQuery();      
        	$cloud_id = $req_q['cloud_id'];
         $query 	  = $this->{$this->main_model}->find();      
-        $this->CommonQueryFlat->cloud_with_system($query,$cloud_id,['MwanInterfaces' => ['MwanInterfaceSettings']]);
+        $this->CommonQueryFlat->cloud_with_system($query,$cloud_id,['MwanInterfaces' => ['MwanInterfaceSettings','SqmProfiles']]);
         
         if(isset($req_q['id'])){
         	if($req_q['id'] > 0){
@@ -128,7 +128,36 @@ class MultiWanProfilesController extends AppController {
             	$for_system = true;
             }
             $row['for_system']  = $for_system;
-							
+			
+			$active_total = 0;
+			$standby_total= 0;
+										
+			if(count($i->mwan_interfaces) == 0){
+			    $row['reminder_flag']       = true;
+			    $row['reminder_message']    = 'Reminder: Ensure you add at least one interface to activate this Multi-WAN profile.';
+			}else{
+			    //Check if at least one interface has polico_active set
+			    $policy_active  = false;
+                $policy_mode    = 'load_balance';
+			    foreach($i->mwan_interfaces as $mwanInterface){
+			        if($mwanInterface->policy_active == true){		         
+			            $policy_active = true;
+			            if($mwanInterface->policy_role == 'standby'){
+			                $policy_mode = 'fail_over';
+			                $standby_total = $standby_total +  $mwanInterface->policy_ratio;  
+			              //  print_r("STANDBY ".$standby_total);
+			            }else{
+			                $active_total = $active_total +  $mwanInterface->policy_ratio; 
+			               // print_r("ACTIVE ".$active_total."HH".$mwanInterface->policy_ratio);
+			            }
+			        }
+			    }
+			    if(!$policy_active){
+			        $row['reminder_flag']       = true;
+			        $row['reminder_message']    = 'Reminder: Ensure you enable at least one interface using the Policy Editor (Botton with chain icon)';
+			    }			    
+			}
+			
 			$items[] = $row;
 			
 			//Now the interfaces
@@ -136,6 +165,16 @@ class MultiWanProfilesController extends AppController {
 			    $mwanInterface->con_type = $mwanInterface->type;
 			    $mwanInterface->type = 'mwan_interface';
 			    $mwanInterface->multi_wan_profile_name = $i->name;
+			    $mwanInterface->policy_mode = $policy_mode;
+			    if($mwanInterface->policy_role == 'standby'){
+			        if($standby_total > 0){
+			            $mwanInterface->percent_ratio = round(($mwanInterface->policy_ratio / $standby_total)* 100);
+			        }
+			    }else{
+			        if($active_total > 0){
+			            $mwanInterface->percent_ratio = round(($mwanInterface->policy_ratio / $active_total )* 100);
+			        }
+			    }			    
 			    $items[] = $mwanInterface;		
 			}
 			
@@ -662,7 +701,7 @@ class MultiWanProfilesController extends AppController {
             
             if($activeCount < 2){ 
                 $found_error = true;           
-                $message = __('At least TWO interface needs to be selected');                                 
+                $message = __('At least TWO interfaces needs to be selected');                                 
             }
             
             if($found_error){           

@@ -474,8 +474,9 @@ class ConnectionComponent extends Component {
                 array_push($config, [
                     'member' => $member_name,
                     'options'   => [
-                        'metric' => $policy_metric,
-                        'weight' => $mwanInterface->policy_ratio
+                        'metric'    => $policy_metric,
+                        'weight'    => $mwanInterface->policy_ratio,
+                        'interface' => "mw$if_id"
                     ]
                 ]);
                 $policy_members[] = $member_name;            	            

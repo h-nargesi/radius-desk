@@ -10,6 +10,7 @@ class MwanInterfacesTable extends Table {
     public function initialize(array $config):void{  
         $this->addBehavior('Timestamp');  
         $this->belongsTo('MultiWanProfiles');
+        $this->belongsTo('SqmProfiles');
         $this->hasMany('MwanInterfaceSettings',  ['dependent' => true]);        
     }
       

@@ -2,6 +2,15 @@ Rd = {};
 
 Rd.config = {
 
+    //Graph Related
+    rdGraphLabel    : {
+        fontSize    : '14px',
+        fontFamily  : 'Roboto, Arial, san-serif',
+        fill        : '#29465b'
+    },
+    rdGraphBarColors: ['#56b3fa', '#3e8ebe' ],
+    rdTextColor     : '#29465b',
+    
     //GUI Improvements
     gridPadding     : 10,
     gridSlim        : '0 3 0 3',
@@ -186,6 +195,15 @@ Rd.config = {
     'icnFire'       : 'xf06d@FontAwesome',
     'icnCalendar'	: 'xf073@FontAwesome',
     'icnBus'		: 'xf207@FontAwesome',
-    'icnMeter'		: 'xf0e4@FontAwesome'
+    'icnMeter'		: 'xf0e4@FontAwesome',
+    'icnQrcode'     : 'xf029@FontAwesome',
+    'icnUpoad'      : 'xf093@FontAwesome',
+    'icnSitemap'    : 'xf0e8@FontAwesome',
+    'icnPlug'       : 'xf1e6@FontAwesome',
+    'icnToggleOn'   : 'xf205@FontAwesome',
+    'icnScale'      : 'xf24e@FontAwesome',
+    'icnPauseO'     : 'xf28c@FontAwesome',
+    'icnPlayO'      : 'xf01d@FontAwesome',
+    'icnSliders'    : 'xf1de@FontAwesome',
 }
 
