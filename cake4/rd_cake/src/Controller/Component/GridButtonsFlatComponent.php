@@ -774,6 +774,11 @@ class GridButtonsFlatComponent extends Component {
             $menu   = $b;
         }
         
+        if($type == 'MwanProfiles'){
+            $b      = $this->_fetchMwanProfiles();
+            $menu   = $b;
+        }
+        
         if($type == 'FirewallApps'){
             $b  = $this->_fetchBasic();
             $menu = [$b];
@@ -1023,6 +1028,56 @@ class GridButtonsFlatComponent extends Component {
         ];             
 	    $menu = [$b,$c,$d];
         return $menu;    
+    }
+    
+    private function _fetchMwanProfiles(){
+    
+        $b = ['xtype' => 'buttongroup', 'title' => $this->t, 'items' => [
+            $this->btnReload,       
+            $this->btnAdd,
+            $this->btnDelete,
+            $this->btnEdit
+            ]
+	    ];
+	    $c = ['xtype' => 'buttongroup', 'title' => $this->t, 'items' => [
+            [
+                'xtype'     => 'button', 
+                'glyph'     => Configure::read('icnLink'), 
+                'scale'     => $this->scale,
+                'itemId'    => 'mwan_policies',
+                'tooltip'   =>  __('Multi-WAN Policies'),
+                'ui'        => $this->btnUiProfComp
+            ],
+            [
+                'xtype'     => 'button', 
+                'glyph'     => Configure::read('icnFire'), 
+                'scale'     => $this->scale,
+                'itemId'    => 'mwan_rules',
+                'tooltip'   =>  __('Multi-WAN Firewall Rules'),
+                'ui'        => $this->btnUiProfComp
+            ]                   
+        ]]; 
+        
+        $cmb_mwan_profiles = [
+            'xtype'     => 'cmbMultiWanProfile',
+            'margin'    => '5 0 5 0',
+            'width'		=> 230,
+            'itemId'    => 'cmbMultiWanProfile',
+            'fieldLabel'=> '',
+            'value'		=> 0,
+            'include_all_option' => true 
+        ];
+        
+        $d = [
+        	'xtype' => 'buttongroup', 
+        	'title' => $this->t,
+        	'items' => [
+        		$cmb_mwan_profiles                   
+        	]
+        ];             
+	    $menu = [$b,$c,$d];
+        return $menu;    
+      
     }
         
     private function _fetchProfiles(){

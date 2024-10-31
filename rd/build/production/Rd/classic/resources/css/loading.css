@@ -200,3 +200,19 @@
 }
 
 
+.reminder-message {
+    background-color: #fffbe6; /* Soft yellow background for visibility */
+    color: #856404; /* Dark gold text for contrast */
+    border: 1px solid #ffeeba; /* Light gold border */
+    padding: 5px;
+    font-size: 0.9em;
+    margin: 5px;
+}
+
+.reminder-message .icon {
+    font-size: 1.2em;
+    color: #856404; /* Matches the text color */
+    margin-right: 8px;
+}
+
+
