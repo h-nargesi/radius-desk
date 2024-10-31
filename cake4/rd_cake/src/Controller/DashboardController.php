@@ -868,22 +868,17 @@ class DashboardController extends AppController{
                 'class'         => 'other-brown',
               ]
         ];
-        
-        $items[] =  [
-            'column1'   => 
-              [
-                'name'          => 'MULTI WAN',
-                'controller'    => 'cMultiWan',
-                'id'            => 'pnlOtherMultiWan',
-                'glyph'         => 'xf10e',
-                'class'         => 'other-brown',
-              ],
-        ];
-            
         if($isRootUser){
             $items[] =  [
-
                 'column1'   => 
+                  [
+                    'name'          => 'MULTI WAN',
+                    'controller'    => 'cMultiWan',
+                    'id'            => 'pnlOtherMultiWan',
+                    'glyph'         => 'xf0e8',
+                    'class'         => 'other-brown',
+                  ],
+                'column2' => 
                   [
                     'name'          => 'FREERADIUS HOME SERVERS',
                     'controller'    => 'cHomeServerPools',
@@ -892,8 +887,19 @@ class DashboardController extends AppController{
                     'class'         => 'other-brown',
                   ]
             ];
+        }else{
+            $items[] =  [
+                'column1'   => 
+                  [
+                    'name'          => 'MULTI WAN',
+                    'controller'    => 'cMultiWan',
+                    'id'            => 'pnlOtherMultiWan',
+                    'glyph'         => 'xf0e8',
+                    'class'         => 'other-brown',
+                  ],
+            ];                      
         }
-        
+               
          $this->set([
             'success' => true,
             'items'    => $items

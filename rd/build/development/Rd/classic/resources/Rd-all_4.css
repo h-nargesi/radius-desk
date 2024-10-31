@@ -8858,7 +8858,8 @@ p {
     margin: 5px;
     padding: 5px;
     background: #7d7e80;
-    cursor: move;
+    cursor: pointer;
+    /* Change cursor to pointer */
     font-size: 25px;
     color: #142952;
     text-align: left;
@@ -8875,8 +8876,9 @@ p {
 .plain-wrap .sub {
     margin: 5px;
     padding: 5px;
-    background: #dde2eb;
-    cursor: move;
+    border: 1px solid #3ca0e8;
+    cursor: pointer;
+    /* Change cursor to pointer */
     text-align: left;
 }
 /* /var/www/rdcore/rd/classic/sass/src/Application.scss:149 */

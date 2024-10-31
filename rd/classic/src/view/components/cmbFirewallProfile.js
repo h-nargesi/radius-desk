@@ -20,8 +20,7 @@ Ext.define('Rd.view.components.cmbFirewallProfile', {
         listeners: {
             load: function(store, records, successful) {
             	if(me.include_all_option){
-					me.setValue(0); //reset the value of the combobox when reloading to all schedules
-					console.log("Set it to zero");
+					me.setValue(0);
 				}    
             },
             scope: me
