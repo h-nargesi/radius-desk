@@ -64,6 +64,7 @@ Ext.define('Rd.view.aps.vcApGeneric', {
         var pnlWifiStatic   = form.down('#pnlWifiStatic');
         var pnlWifiPppoe    = form.down('#pnlWifiPppoe');
         var pnlQmi          = form.down('#pnlQmi');
+        var pnlMwan         = form.down('#pnlMwan');
               
         if(cmb.getValue() == 'wifi'){
             cntWbW.setHidden(false);
@@ -111,7 +112,14 @@ Ext.define('Rd.view.aps.vcApGeneric', {
         }else{
             pnlQmi.setHidden(true);
             pnlQmi.setDisabled(true);
-        }          
+        } 
+        if(cmb.getValue() == 'mwan'){
+            pnlMwan.setHidden(false);
+            pnlMwan.setDisabled(false);   
+        }else{
+            pnlMwan.setHidden(true);
+            pnlMwan.setDisabled(true);
+        }             
     },        
     onCmbEncryptionOptionsChangeWbw : function(cmb){
         var me      = this;

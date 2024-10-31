@@ -2219,7 +2219,17 @@ class ApProfilesController extends AppController {
                         $this->{'ApConnectionSettings'}->save($ent_ws);    
                     }
                 }               
-            }        
+            }
+            
+            if($this->request->getData('internet_connection') == 'mwan'){
+                $d_mwan             = [];
+                $d_mwan['ap_id']    = $new_id;
+                $d_mwan['grouping'] = 'mwan_setting';
+                $d_mwan['name']     = 'multi_wan_profile_id';
+                $d_mwan['value']    = $cdata["multi_wan_profile_id"];
+                $ent_mwan           = $this->{'ApConnectionSettings'}->newEntity($d_mwan);  
+                $this->{'ApConnectionSettings'}->save($ent_mwan);                   
+            }          
             
             if(isset($cdata['chk_no_controller'])){
                 $d_wbw['ap_id']    = $new_id;
@@ -2505,8 +2515,7 @@ class ApProfilesController extends AppController {
 
                     if ($this->Aps->save($apEntity)) {
                         $new_id = $apEntity->id;
-                        
-                        
+                                             
                         //vlan_admin settings
                         $this->{'ApConnectionSettings'}->deleteAll([
                             'ApConnectionSettings.ap_id' => $new_id,
@@ -2641,7 +2650,23 @@ class ApProfilesController extends AppController {
                                     $this->{'ApConnectionSettings'}->save($ent_ws);    
                                 }
                             }               
-                        }                                  
+                        }  
+                        
+                       $this->{'ApConnectionSettings'}->deleteAll([ //
+                            'ApConnectionSettings.ap_id' => $new_id,
+                            'ApConnectionSettings.grouping' => 'mwan_setting'
+                        ]);    
+                        
+                        if($this->request->getData('internet_connection') == 'mwan'){
+                            $d_mwan             = [];
+                            $d_mwan['ap_id']    = $new_id;
+                            $d_mwan['grouping'] = 'mwan_setting';
+                            $d_mwan['name']     = 'multi_wan_profile_id';
+                            $d_mwan['value']    = $cdata["multi_wan_profile_id"];
+                            $ent_mwan           = $this->{'ApConnectionSettings'}->newEntity($d_mwan);  
+                            $this->{'ApConnectionSettings'}->save($ent_mwan);                   
+                        }    
+                                                                                
                         
                         //Check if any of the reboot things are specified
                         $this->{'ApConnectionSettings'}->deleteAll([
@@ -3062,6 +3087,10 @@ class ApProfilesController extends AppController {
                     $data[$ws_n]    = $ncs->value;
                 }
                 
+                if($ncs->grouping == 'mwan_setting'){
+                    $data['internet_connection'] = 'mwan';
+                }
+                               
                 if($ncs->grouping == 'vlan_setting'){
                     $data[$ncs->name]    = intval($ncs->value);
                 }

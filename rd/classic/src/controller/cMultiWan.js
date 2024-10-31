@@ -20,7 +20,7 @@ Ext.define('Rd.controller.cMultiWan', {
                     },
 	                items   : [
 	                    { 
-	                        title   : 'MultiWan', 
+	                        title   : 'Multi-WAN', 
 	                        xtype   : 'pnlMultiWanProfiles',
 	                        border  : false,
                             plain   : true,

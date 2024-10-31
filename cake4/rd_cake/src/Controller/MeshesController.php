@@ -1928,6 +1928,7 @@ class MeshesController extends AppController{
             }
             $wbw_active = false;
             $qmi_active = false;
+            $mwan_active= false;
             if($m->node_connection_settings){
                 foreach($m->node_connection_settings as $ent_ncs){
                     if($ent_ncs->grouping == 'wbw_setting'){
@@ -1936,6 +1937,10 @@ class MeshesController extends AppController{
                     }
                     if($ent_ncs->grouping == 'qmi_setting'){
                         $qmi_active = true;
+                        break;
+                    }
+                    if($ent_ncs->grouping == 'mwan_setting'){
+                        $mwan_active = true;
                         break;
                     }
                 }
@@ -1959,7 +1964,8 @@ class MeshesController extends AppController{
                 'static_entries'=> $static_entries,
                 'ip'            => $m->ip,
                 'wbw_active'    => $wbw_active,
-                'qmi_active'	=> $qmi_active
+                'qmi_active'	=> $qmi_active,
+                'mwan_active'   => $mwan_active
             ));
         }
         //___ FINAL PART ___
@@ -2256,6 +2262,16 @@ class MeshesController extends AppController{
                         $this->{'NodeConnectionSettings'}->save($ent_ws);    
                     }
                 }               
+            }
+            
+            if($this->request->getData('internet_connection') == 'mwan'){
+                $d_mwan             = [];
+                $d_mwan['node_id']  = $new_id;
+                $d_mwan['grouping'] = 'mwan_setting';
+                $d_mwan['name']     = 'multi_wan_profile_id';
+                $d_mwan['value']    = $req_d["multi_wan_profile_id"];
+                $ent_mwan           = $this->{'NodeConnectionSettings'}->newEntity($d_mwan);  
+                $this->{'NodeConnectionSettings'}->save($ent_mwan);                 
             }
                                       
             if (array_key_exists('static_entries', $req_d)) {
@@ -2587,6 +2603,21 @@ class MeshesController extends AppController{
                             $this->{'NodeConnectionSettings'}->save($ent_ws);    
                         }
                     }               
+                }
+                
+               $this->{'NodeConnectionSettings'}->deleteAll([ //
+                    'NodeConnectionSettings.node_id' => $new_id,
+                    'NodeConnectionSettings.grouping' => 'mwan_setting'
+                ]);    
+                
+                if($this->request->getData('internet_connection') == 'mwan'){
+                    $d_mwan             = [];
+                    $d_mwan['node_id']  = $new_id;
+                    $d_mwan['grouping'] = 'mwan_setting';
+                    $d_mwan['name']     = 'multi_wan_profile_id';
+                    $d_mwan['value']    = $req_d["multi_wan_profile_id"];
+                    $ent_mwan           = $this->{'NodeConnectionSettings'}->newEntity($d_mwan);  
+                    $this->{'NodeConnectionSettings'}->save($ent_mwan);                 
                 }                                             
                 
                 //Check if any of the reboot things are specified
@@ -2780,6 +2811,10 @@ class MeshesController extends AppController{
                 $q_r['internet_connection'] = 'qmi';
                 $ws_n          = 'qmi_'.$ncs->name;
                 $q_r[$ws_n]    = $ncs->value;
+            }
+            
+            if($ncs->grouping == 'mwan_setting'){
+                $q_r['internet_connection'] = 'mwan';
             }
             
           	if($ncs->grouping == 'vlan_setting'){

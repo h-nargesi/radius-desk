@@ -583,6 +583,21 @@ Ext.define('Rd.view.meshes.pnlMeshAddEditNode', {
                 }
             ]
         };
+        
+        var pnlMwan = {
+            xtype   : 'panel',
+            itemId  : 'pnlMwan',
+            hidden  : true,
+            disabled: true,
+            bodyStyle   : 'background: #e0ebeb',
+            items   : [                  
+                {
+                    xtype               : 'cmbMultiWanProfile',
+                    include_all_option  : false,
+                    width               : w_prim
+                }
+            ]
+        };
                 
         var cntRebootController = {
             xtype   : 'panel',
@@ -696,6 +711,7 @@ Ext.define('Rd.view.meshes.pnlMeshAddEditNode', {
 	            pnlWifiStatic,
 	            pnlWifiPppoe,
 	            pnlQmi,
+	            pnlMwan,
 	            {
                     xtype       : 'numberfield',
                     name        : 'vlan_admin',
