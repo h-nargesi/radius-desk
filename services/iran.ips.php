@@ -8,6 +8,12 @@ function get_url_contents($url) {
 	return $contents;
 }
 
+function add_defaults($contents) {
+	$default = file_get_contents('default.txt');
+	$contents = $default . "\n" . $contents;
+	return $contents;
+}
+
 function add_phrase_to_beginning($contents, $phrase) {
 	$lines = explode("\n", $contents);
 	$new_lines = array();
@@ -18,8 +24,9 @@ function add_phrase_to_beginning($contents, $phrase) {
 	return implode("\n", $new_lines);
 }
 
-$url = 'https://www.ipdeny.com/ipblocks/data/aggregated/ir-aggregated.zone';
+$url = 'https://www.ipdeny.com/ipblocks/data/countries/ir.zone';
 $contents = get_url_contents($url);
+$contents = add_defaults($contents);
 $phrase = '/ip firewall address-list add comment="Iran (Islamic Republic of)" list=Local address=';
 $new_contents = add_phrase_to_beginning($contents, $phrase);
 
