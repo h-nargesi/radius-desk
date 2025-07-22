@@ -205,19 +205,20 @@ class AccountingShell extends Shell {
                 if(array_key_exists('time', $counters)){
 					//We will only update the usage if it is NOT Rd-Mac-Counter-Time in the counter (mac_counter)
 					if(!$counters['time']['mac_counter']){
-                    
-		                $used       = $this->Usage->time_usage($counters['time'],$username,'username');
-		                $perc_used  = intval(($used / $counters['time']['value'])* 100);                  
-		                $q_r        = $this->{'PermanentUsers'}->find()->where(['PermanentUsers.username' => $username])->first();
-		                if($q_r){
-		                    $this->out("<comment>Update usage percentage for $username to $perc_used</comment>");
-                            $d = [];
-		                    $d['perc_time_used']	= $perc_used;
-							$d['time_used']		    = $used;
-							$d['time_cap']			= $counters['time']['value'];
-							$this->{'PermanentUsers'}->patchEntity($q_r,$d);
-                            $this->{'PermanentUsers'}->save($q_r);
-		                }
+						if (array_key_exists('value', $counters['time']) $$ $counters['time']['value'] > 0) {
+							$used       = $this->Usage->time_usage($counters['time'],$username,'username');
+							$perc_used  = intval(($used / $counters['time']['value'])* 100);                  
+							$q_r        = $this->{'PermanentUsers'}->find()->where(['PermanentUsers.username' => $username])->first();
+							if($q_r){
+								$this->out("<comment>Update usage percentage for $username to $perc_used</comment>");
+								$d = [];
+								$d['perc_time_used']	= $perc_used;
+								$d['time_used']		    = $used;
+								$d['time_cap']			= $counters['time']['value'];
+								$this->{'PermanentUsers'}->patchEntity($q_r,$d);
+								$this->{'PermanentUsers'}->save($q_r);
+							}
+						}
 					}else{
 						//This counter is on the MAC so well add it to the mac_usages table
 						$used       	= $this->Usage->time_usage_for_mac($counters['time'],$username,$mac);
