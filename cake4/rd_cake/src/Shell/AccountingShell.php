@@ -205,7 +205,7 @@ class AccountingShell extends Shell {
                 if(array_key_exists('time', $counters)){
 					//We will only update the usage if it is NOT Rd-Mac-Counter-Time in the counter (mac_counter)
 					if(!$counters['time']['mac_counter']){
-						if (array_key_exists('value', $counters['time']) $$ $counters['time']['value'] > 0) {
+						if (array_key_exists('value', $counters['time']) && $counters['time']['value'] > 0) {
 							$used       = $this->Usage->time_usage($counters['time'],$username,'username');
 							$perc_used  = intval(($used / $counters['time']['value'])* 100);                  
 							$q_r        = $this->{'PermanentUsers'}->find()->where(['PermanentUsers.username' => $username])->first();
