@@ -3,6 +3,8 @@
 function get_url_contents($url) {
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_PROXY, "socks5://fnb06.photon-bypass.com:1080");
+	curl_setopt($ch, CURLOPT_PROXYUSERPWD, "photonAio:aiOphoton");
 	$contents = curl_exec($ch);
 	curl_close($ch);
 	return $contents;
@@ -23,6 +25,17 @@ function add_phrase_to_beginning($contents, $phrase) {
 	}
 	return implode("\n", $new_lines);
 }
+
+$aContext = array(
+    'http' => array(
+        'proxy'           => 'tcp://192.168.0.2:3128',
+        'request_fulluri' => true,
+    ),
+);
+$cxContext = stream_context_create($aContext);
+
+$sFile = file_get_contents("http://www.google.com", False, $cxContext);
+
 
 $url = 'https://www.ipdeny.com/ipblocks/data/countries/ir.zone';
 $contents = get_url_contents($url);
